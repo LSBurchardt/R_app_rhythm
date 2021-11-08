@@ -10,29 +10,40 @@
 
 ## 00a: load packages-----------
 
+library(tidyverse)
 
-## 00b: load example data ------
+## 00b: prepare data ------
+
+#define global variables
+
+ results_rhythm <<- data.frame()      # <<- global assignment operator, needs to be used when changing as well
 
 
+
+## 00c: prepare functions
+ 
+ #to source all files in the latest version: list.files("path_to_folder", full.names = TRUE) %>% map(source)
+ # could also be useful to set path and find all files
+ 
+ source("ioi.R")
+ source("binary.R")
+ 
+ data <- read_delim("data/S bil_IC beat_pup 1_call 02.csv", delim = ",", col_names = FALSE)
+ 
 ## 01: Set path ----------------
 # batch processing, choose whole folder to conduct analysis
 
 
-## 02: Binary ------------------
-# transform time labels to binary sequence
+## 02: loop through all file
+ 
+list_of_file <- 1   #change here to list_of_files produced in 01: Set Path
+ 
+for (a in 1) { #:nrow(list_of_file)){
+  
+  binary(data)
+  ioi_calc(data)
+  
+}
+ 
+ colnames(results_rhythm) <- c("ioi beat", "unbiased cv")
 
-
-## 03: Fourier anlysis ---------
-# calculate FFT over binary sequence to calculate best fitting beat
-
-
-## 04: IOI analysis-------------
-# calculate IOI rhythm over original sequence to calculate best fitting beat
-
-
-## 05: ugof---------------------
-# calculate goodness-of-fit for IOI analysis and Fourier analysis
-
-
-## 06: plotting ----------------
-# possible plot: histogram, scatter plot, recurrence plot
