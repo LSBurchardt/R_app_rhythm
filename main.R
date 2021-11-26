@@ -28,6 +28,7 @@ library(tidyverse)
  source("ioi.R")
  source("binary.R")
  source("fourier.R")
+ source("ugof.R")
  
  data <- read_delim("data/S bil_IC beat_pup 1_call 02.csv", delim = ",", col_names = FALSE)
  
@@ -44,10 +45,10 @@ for (a in 1) { #:nrow(list_of_file)){
   binary(data)
   ioi_calc(data)
   fourier_calc(binarydata)
-  #ugof(data = data, beat = results_rhythm[i,1] ) # i being the looping variable through rows in the results_rhythm dataframe
+  ugof(data = data, beat = results_rhythm[i,1] ) # i being the looping variable through rows in the results_rhythm dataframe
   # beat_2 is an optional argument and can be set to the fft rhythm for example like this: [..]beat_2 = results_rhyth,[i,3]
   
 }
  
- colnames(results_rhythm) <- c("ioi beat", "unbiased cv", "fft beat", "freq resolution", "n elements", "n samples")
+ colnames(results_rhythm) <- c("ioi beat", "unbiased cv", "fft beat", "freq resolution", "n elements", "n samples", "ugof beat 1")
 

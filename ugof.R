@@ -8,7 +8,7 @@
 # ugof script
 ######################################################################################
 
-ugof <- function(data_ugof, beat, beat_2 = NULL){
+ugof <- function(data, beat, beat_2 = NULL){
 
   #optional arguments: beat_2 = NULL
   # https://stackoverflow.com/questions/28370249/correct-way-to-specifiy-optional-arguments-in-r-functions 
@@ -19,10 +19,10 @@ library(tidyverse)
 
 ## 00b: load example data ------
 
-  data_ugof <- data[,1]
+  data_ugof <- pull(data[,1])
   
 #for testing
-  beat <- results_rhythm[1,1]
+  #beat <- results_rhythm[1,1]
   
 ## 01: ugof calculations -------
 # calculate goodness-of-fit for IOI analysis and Fourier analysis
@@ -43,6 +43,29 @@ library(tidyverse)
   theotime_seq[count,1] <- theotime_value;
   
   }
+  
+  # match original sequence to theoretical timeseries and calculate actual deviation
+  x <- length(data_ugof)
+  min_value <- c(1:x)
+  ugof_value_beat <- c()
+
+  
+  for (n in 1:x){
+    
+    min_value[n] <- min(abs(data_ugof[n]- theotime_seq))
+    
+  }
+  
+  # calculate uGof
+  
+  maxdev <- timesteps/2/1000;
+  
+  ugof_value_beat <- min_value/maxdev;
+  
+  
+  m_ugof_beat_1 <- median(ugof_value_beat[2:length(ugof_value_beat)])
+  
+  results_rhythm[1,7] <<- m_ugof_beat_1
   
 ## 01b: ugof Fourier
 
