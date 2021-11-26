@@ -70,4 +70,6 @@ ggsave('plots/histogram.jpg',
 
 
 #} #end of loop for number of files, needs to be added
+ioi_seq <<- ioi #to be used in npvi and recurrence plot calculations, global variable 
+
 }

@@ -23,6 +23,7 @@ library(tidyverse)
   
 #for testing
   #beat <- results_rhythm[1,1]
+  beat_2 <- results_rhythm[1,3]
   
 ## 01: ugof calculations -------
 # calculate goodness-of-fit for IOI analysis and Fourier analysis
@@ -68,7 +69,44 @@ library(tidyverse)
   results_rhythm[1,7] <<- m_ugof_beat_1
   
 ## 01b: ugof Fourier
-
+  
+  maxoriginal_2 <- max(data_ugof)
+  timesteps_2 <- 1000/round(beat_2, digits = 1)
+  count_2 <- 0
+  theotime_value_2 <- 0
+  theotime_seq_2 <- data.frame()
+  
+  while (theotime_value_2 < maxoriginal_2){
+    
+    count_2 <- count_2 + 1;
+    theotime_value_2 <- count_2 * timesteps_2 /1000;
+    theotime_seq_2[count_2,1] <- theotime_value_2;
+    
+  }
+  
+  # match original sequence to theoretical timeseries and calculate actual deviation
+  
+  x_2 <- length(data_ugof)
+  min_value_2 <- c(1:x)
+  ugof_value_beat_2 <- c()
+  
+  
+  for (n in 1:x){
+    
+    min_value_2[n] <- min(abs(data_ugof[n]- theotime_seq_2))
+    
+  }
+  
+  # calculate uGof
+  
+  maxdev_2 <- timesteps_2/2/1000;
+  
+  ugof_value_beat_2 <- min_value_2/maxdev_2;
+  
+  
+  m_ugof_beat_2 <- median(ugof_value_beat_2[2:length(ugof_value_beat_2)])
+  
+  results_rhythm[1,8] <<- m_ugof_beat_2
 
 ## 02: ugof modelling ---------
 

@@ -36,9 +36,9 @@ colnames(binarydata) <<- c('timeseries')
 
 
 for (l in 1: max(event_timepoint_fs)){
-  print(l)
+  #print(l)
   for ( i in 1: nrow(event_timepoint_fs)){
-    print(i)
+    #print(i)
     if (l == event_timepoint_fs[i,1]){
       
       binarydata[l,1] <<- 1 
