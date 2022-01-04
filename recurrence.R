@@ -13,15 +13,27 @@ recurrence <- function(data){
 ## 00a: load packages-----------
 
 library(tidyverse)
-library(crqa) #package with recurrence plot option, check if we really use it
 library(vegan) #to calculate euclidean distance
 library(corrplot)
   
 ## 00b: load example data ------
 
-# ioi_seq
+#data input from function
   
-## 01: recurrence matrix
+  
+## 01: data to ioi sequence ------------------------
+  ioi_seq <- data.frame()                 # set up empty dataframe to store ioi values in
+  
+  #for (a in filenumber){             #start of loop for number of files, needs to be added, maybe better add in main! 
+  
+  for (x in  1:nrow(data)) {          # start of loop through rows of data to calculate iois
+    
+    z = x+1 
+    ioi_seq[x,1] <- data[z,1]-data[x,1]
+    
+  }
+  
+## 02: recurrence matrix ---------------------
 
   #euclidian distance matrix (when using phillips way)
   
@@ -35,45 +47,26 @@ library(corrplot)
   # transform matrix as to be able to plot it with ggplot as tile plot
   #https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2
   
+  levels <- 1:(nrow(eucl_dist))
+  
   eucl_dist_2 <- eucl_dist %>%
     tibble::as_tibble() %>%
     rownames_to_column('Var1') %>%
     gather(Var2, value, -Var1) %>%
     mutate(
-      Var1 = factor(Var1, levels=1:11),              # levels has to be changed to dynamically change according to plot
-      Var2 = factor(gsub("V", "", Var2), levels=1:1) # same issue for levels
+      Var1 = factor(Var1, levels = levels),              
+      Var2 = factor(gsub("V", "", Var2), levels = levels) 
     )
-  
+## 03: recurrence plot -----------------
+    
   ggplot(eucl_dist_2, aes(Var1, Var2)) +
     geom_tile(aes(fill = value)) + 
     #geom_text(aes(label = round(value, 1))) +
     scale_fill_gradient(low = "white", high = "black") 
- 
 
-# matlab code from philipp
-#threshold = mean(ioi) * 0.1;
-# distanceMatrix = abs(bsxfun(@minus, ioi, transpose(ioi)) );  
-#  % set values < threshold to 0
-#  distanceMatrix(distanceMatrix<threshold) = 0; 
-# binaryDistanceMatrix = distanceMatrix < threshold;
-# imagesc(-distanceMatrix);  
   
-#https://dk81.github.io/dkmathstats_site/rvisual-corrplots.html
-  dat <- matrix(rnorm(100, 3, 1), ncol=10)
-  
-  ## reshape data (tidy/tall form)
-  dat2 <- dat %>%
-    tibble::as_tibble() %>%
-    rownames_to_column('Var1') %>%
-    gather(Var2, value, -Var1) %>%
-    mutate(
-      Var1 = factor(Var1, levels=1:10),
-      Var2 = factor(gsub("V", "", Var2), levels=1:10)
-    )
-  
-  ## plot data
-  ggplot(dat2, aes(Var1, Var2)) +
-    geom_tile(aes(fill = value)) + 
-    #geom_text(aes(label = round(value, 1))) +
-    scale_fill_gradient(low = "white", high = "black") 
+  ggsave('plots/recurrence.jpg',
+         dpi =300 , 
+         device = "jpg")  
+   
 }
