@@ -8,16 +8,26 @@
 # batch processing
 ######################################################################################
 
-batch_processing <- function(data){
+batch_processing <- function(){
 
 ## 00: load packages-----------
 
 library(tidyverse)
+library(svDialogs)
 
 ## 01: establish vector with all data, that is to be processed
   
-  #list.files
+ 
+  # path is chosen from windows explorer by the researcher
+  path <- choose.dir()
+  
+  pattern <<- dlgInput("Enter a file pattern, like csv or xlsx", Sys.info()["user"])$res
+  
+  # a list of files in that folder corresponidng to the chosen pattern is made
+  files <<- list.files(path = path, pattern = pattern)
+
   
   
+ 
   
 }
