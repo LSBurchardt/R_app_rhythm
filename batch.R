@@ -19,7 +19,7 @@ library(svDialogs)
   
  
   # path is chosen from windows explorer by the researcher
-  path <- choose.dir()
+  path <<- choose.dir()
   
   pattern <<- dlgInput("Enter a file pattern, like csv or xlsx", Sys.info()["user"])$res
   
