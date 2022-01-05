@@ -28,7 +28,7 @@ library(SynchWave)    # fftshift
   k <- which(binarydata != 0, arr.ind = T)   # find outputs all values unequal zero -> finds all 1's, saves indices in k
   X <- binarydata$timeseries[min(k[,1]):max(k[,1])]             # X in binary data cut to start and end with 1
   L <- length(X)                              # length of actual signal 
-  kk <- length(k)                             #number of elements in sequence! save!
+  kk <- nrow(k)                             #number of elements in sequence! save!
   
  
   fs <- 200; # should be soft coded to match sampling rate calculated with in "binary"
@@ -73,9 +73,9 @@ if (peaks[1,3] != 0){
 
 #save data
 
-results_rhythm[1,3] <<- peaks$freq[2] #change row index to soft coding once loops are in place [i,3]
-results_rhythm[1,4] <<- df            # frequency resolution
-results_rhythm[1,5] <<- kk            # number of elements 
-results_rhythm[1,6] <<- L             # length of signal
+results_rhythm[a,3] <<- peaks$freq[2] #change row index to soft coding once loops are in place [i,3]
+results_rhythm[a,4] <<- df            # frequency resolution
+results_rhythm[a,5] <<- kk            # number of elements 
+results_rhythm[a,6] <<- L             # length of signal
 
 }

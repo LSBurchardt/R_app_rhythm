@@ -18,7 +18,7 @@ library(tidyverse)
 
 #data <- read_delim("data/S bil_IC beat_pup 1_call 02.csv", delim = ",", col_names = FALSE)
 
-results_rhythm <<- data.frame()
+#results_rhythm <<- data.frame()
 
 #reads in the data from a .csv file, without column headers use option col_names = FALSE
 
@@ -39,6 +39,8 @@ ioi[x,1] <- data[z,1]-data[x,1]
 
 }                                   #end of loop through rows of data to calculate iois
 
+colnames(ioi) <- c("X1")
+
 ioi_beat <- 1/mean(ioi$X1, na.rm = TRUE) # calculate mean of iois
 
 ioi_cv <- sd(ioi$X1, na.rm = TRUE)/mean(ioi$X1, na.rm = TRUE)
@@ -47,8 +49,8 @@ ioi_cv_unbiased <-  (1+1/(4*(nrow(ioi)-1)))*ioi_cv
 
 #add parameters to results
 
-results_rhythm[1,1] <<- ioi_beat 
-results_rhythm[1,2] <<- ioi_cv_unbiased
+results_rhythm[a,1] <<- ioi_beat 
+results_rhythm[a,2] <<- ioi_cv_unbiased
 
 ## 02: plots ---------------
 
@@ -64,7 +66,7 @@ ggplot(data= ioi, aes(x= X1))+
 # save plot in folder, needs to use a changing name depending on loop once
 # batch processing works
 
-ggsave('plots/histogram.jpg',
+ggsave(paste('plots/histogram_', a, '.jpg', sep = ""),
        dpi =300 , 
        device = "jpg")
 

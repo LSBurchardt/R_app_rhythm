@@ -19,22 +19,22 @@ npvi <- function(ioi){
 
   
   ioi_seq <- drop_na(ioi_seq)
-  a <- c()
+  z <- c()
   b <- c()
   
   for (l in 1: nrow(ioi_seq)){
   
-a[l] <- (ioi_seq[l,1] - ioi_seq[l+1,1])
+z[l] <- (ioi_seq[l,1] - ioi_seq[l+1,1])
 b[l] <- (ioi_seq[l,1] + ioi_seq[l+1,1])/2
 
   } #end of for loop
   
-  a <- na.omit(a)
+  z <- na.omit(z)
   b <- na.omit(b)
-  c <- sum(abs(a/b))
+  c <- sum(abs(z/b))
   
-  npvi <- c*(100/(length(a)-1))
+  npvi <- c*(100/(length(z)-1))
   
-  results_rhythm[1,9] <<- npvi
+  results_rhythm[a,9] <<- npvi
   
   }
