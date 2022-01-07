@@ -23,7 +23,7 @@ library(tidyverse)
   
 #for testing
   #beat <- results_rhythm[1,1]
-  beat_2 <- results_rhythm[1,3]
+  #beat_2 <- results_rhythm[a,3]
   
 ## 01: ugof calculations -------
 # calculate goodness-of-fit for IOI analysis and Fourier analysis
@@ -66,7 +66,7 @@ library(tidyverse)
   
   m_ugof_beat_1 <- median(ugof_value_beat[2:length(ugof_value_beat)])
   
-  results_rhythm[1,7] <<- m_ugof_beat_1
+  results_rhythm[a,7] <<- m_ugof_beat_1
   
 ## 01b: ugof Fourier
   
@@ -106,7 +106,7 @@ library(tidyverse)
   
   m_ugof_beat_2 <- median(ugof_value_beat_2[2:length(ugof_value_beat_2)])
   
-  results_rhythm[1,8] <<- m_ugof_beat_2
+  results_rhythm[a,8] <<- m_ugof_beat_2
 
 ## 02: ugof modelling ---------
 

@@ -65,7 +65,7 @@ library(corrplot)
     scale_fill_gradient(low = "white", high = "black") 
 
   
-  ggsave('plots/recurrence.jpg',
+  ggsave(paste('plots/recurrence_',a,'.jpg', sep = ""),
          dpi =300 , 
          device = "jpg")  
    
