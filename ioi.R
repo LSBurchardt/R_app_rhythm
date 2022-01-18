@@ -57,18 +57,18 @@ results_rhythm[a,2] <<- ioi_cv_unbiased
 # ioi needs to be the complete set of iois, from all datasets not just one
 # needs to be changed, once batch processing is working
 
-ggplot(data= ioi, aes(x= X1))+
-  geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change binwidth here
-  aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
-  xlab("IOI [sec]")+                            
-  ylab("Percentage [%]")
+#ggplot(data= ioi, aes(x= X1))+
+#  geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change binwidth here
+#  aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
+#  xlab("IOI [sec]")+                            
+#  ylab("Percentage [%]")
 
 # save plot in folder, needs to use a changing name depending on loop once
 # batch processing works
 
-ggsave(paste('plots/histogram_', a, '.jpg', sep = ""),
-       dpi =300 , 
-       device = "jpg")
+#ggsave(paste('plots/doreco/histogram_', savename,  a, '.jpg', sep = ""),
+#        dpi =300 , 
+#       device = "jpg")
 
 
 #} #end of loop for number of files, needs to be added

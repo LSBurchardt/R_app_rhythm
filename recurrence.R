@@ -15,6 +15,7 @@ recurrence <- function(data){
 library(tidyverse)
 library(vegan) #to calculate euclidean distance
 library(corrplot)
+library(plotly)
   
 ## 00b: load example data ------
 
@@ -59,13 +60,15 @@ library(corrplot)
     )
 ## 03: recurrence plot -----------------
     
-  ggplot(eucl_dist_2, aes(Var1, Var2)) +
+  p <- ggplot(eucl_dist_2, aes(Var1, Var2)) +
     geom_tile(aes(fill = value)) + 
     #geom_text(aes(label = round(value, 1))) +
     scale_fill_gradient(low = "white", high = "black") 
 
   
-  ggsave(paste('plots/recurrence_',a,'.jpg', sep = ""),
+  ggplotly(p)
+  
+  ggsave(paste('plots/doreco/recurrence_',savename, a,'.jpg', sep = ""),
          dpi =300 , 
          device = "jpg")  
    
