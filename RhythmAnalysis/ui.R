@@ -79,14 +79,32 @@ ui <- fluidPage(
              #add_busy_bar(color = "red", height = "8px"),
              add_busy_spinner(spin = "fading-circle"),
              textOutput("authors"),  #added to mention authors
-             textOutput("files"),
-             textOutput("session"),
-             textOutput("loop_a")
-             #textOutput("calc")
- 
-             )
+             
+             tabsetPanel(type = "tabs",
+                         tabPanel("Data",
+                                  textOutput("files"),
+                                  tableOutput("list_files"),
+                                  tableOutput("table_input_data"),
+                                  textOutput("loop_a"),
+                                  #plotlyOutput("plot_timeseries", inline = TRUE)
+                         ),
+                         tabPanel("Results", 
+                                  
+                                  textOutput("calc"),
+                                  tableOutput("table_ioi"),
+                                  plotOutput("plot_ioi_beat"),
+                                  plotOutput("plot_ioi_all")
+                                  #textOutput("data_test")
+                                  ##
+                         ),
+                         tabPanel("Help",
+                                  ##
+                         )
+                        ),
+            
+               )
           )
-      )
+     )
 )
 
 

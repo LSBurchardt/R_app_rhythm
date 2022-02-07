@@ -57,54 +57,110 @@ server <- function(input, output) {
   observe({
     if(input$goButton_1 > 0){
       
-      path <- choose.dir()
-      pattern <- pattern()
-      list_of_files <- list.files(path = path, pattern = pattern)
+      path <<- choose.dir()
+      pattern <<- pattern()
+      list_of_files <<- list.files(path = path, pattern = pattern)
       
-      output$session <- renderText({
+      output$list_files <- renderTable({
         list.files(path = path, pattern = pattern)})
     }
     
   })
   
   
-  
-  
-  
   #reactive expression df.sub: generates subset of all datapoints for chosen parameters in app
   results <- observe({
+    
     if(input$goButton_2 > 0){
   
   
     if(input$all == TRUE){
       
-      for (a in 1:length(list_of_files)) {
+      results_rhythm <<- data.frame()      # <<- global assignment operator, needs to be used when changing as well
+      ioi_all <<- list(NA)
+  
+      
+       for (a in 1:length(list_of_files)) {
+         
         
-        #be aware: if you have column names: set col_names = TRUE! if not: col_names = FALSE
-        
-        if (pattern == "csv"){
+         
+         #be aware: if you have column names: set col_names = TRUE! if not: col_names = FALSE
+
+        if (input$fileextension == 'csv'){
           data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ",", col_names = TRUE)
-        } else if (pattern == "xls"){
-          data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = FALSE)
-          colnames(data) <- c("X1", "X2", "X3") 
-        } else if (pattern == "xlsx") {
-          data <- read.xlsx(paste(path, list_of_files[a], sep = "\\"), sheet = 1, colNames = FALSE)
-          colnames(data) <- c("X1", "X2", "X3") 
-        } else {
-          print("Please choose a different file format: either .csv or .xls")
-          stop()
-        }
+        } #else if (input$fileextension == "xls"){
+          #data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = FALSE)
+          #colnames(data) <- c("X1", "X2", "X3")
+        #} else if (input$fileextension == "xlsx") {
+        #  data <- read.xlsx(paste(path, list_of_files[a], sep = "\\"), sheet = 1, colNames = FALSE)
+        #  colnames(data) <- c("X1", "X2", "X3")
+        #} else {
+        #  print("Please choose a different file format: either .csv or .xls")
+        #  stop()
+        #}
+
+         output$loop_a <- renderText({
+           paste("We are in loop", a)})
+       
         
-        
-        output$loop_a <- renderText({
-          paste("We are in loop", a)})
         #multiple problems with the xlsx files: for now, we do not allow xlsx
         
         #binary(data)
         #print(paste('Binary', a, 'of', length(list_of_files), 'done', sep =" "))
         
-        ioi_calc(data)
-        #ioi_all[[a]] <- ioi
+         output$table_input_data <- renderTable({
+                data
+         })
+         ### ioi calc ----------
+         ioi <- data.frame()                 # set up empty dataframe to store ioi values in
+         
+         #for (a in filenumber){             #start of loop for number of files, needs to be added, maybe better add in main! 
+         
+         for (x in  1:nrow(data)) {          # start of loop through rows of data to calculate iois
+           
+           z = x+1 
+           ioi[x,1] <- data[z,1]-data[x,1]
+           
+         }                                   #end of loop through rows of data to calculate iois
+         
+         colnames(ioi) <- c("X1")
+         
+         ioi_beat <- 1/mean(ioi$X1, na.rm = TRUE) # calculate mean of iois
+         
+         ioi_cv <- sd(ioi$X1, na.rm = TRUE)/mean(ioi$X1, na.rm = TRUE)
+         ioi_cv_unbiased <-  (1+1/(4*(nrow(ioi)-1)))*ioi_cv
+         
+         
+         #add parameters to results
+         
+         results_rhythm[a,1] <<- ioi_beat 
+         results_rhythm[a,2] <<- ioi_cv_unbiased
+         ioi_all[[a]] <<- ioi
+        
+         
+         output$plot_ioi_beat <- renderPlot({
+           
+           ggplot(data = results_rhythm, aes(x= V1, y = V2))+
+             geom_point(na.rm = TRUE)+                         
+             ylab("Coefficient of Variation")+
+             xlab("IOI Beat [Hz]")
+           
+         })
+         
+         output$plot_ioi_all <- renderPlot({
+           
+           ioi_all <<- as.data.frame(unlist(ioi_all))
+                                     
+           gather(ioi_all, cols, value) %>% 
+             ggplot(aes(x= value))+
+             geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change binwidth here
+             aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
+             xlab("IOI [sec]")+                            
+             ylab("Percentage [%]")+
+             theme_minimal()
+           
+         })
+         
         #print(paste('IOI calc', a, 'of', length(list_of_files), 'done', sep =" "))
         
         #fourier_calc(binarydata)
@@ -119,17 +175,32 @@ server <- function(input, output) {
         
         #recurrence(data)
         #print(paste('Recurrence Plot', a, 'of', length(list_of_files), 'done', sep =" "))
-      }
-      } 
-    
      
+        } #end for loop through list_of_files
+      
+
+      
+      } #end of input$all == TRUE
+      
+     
+      
+      
+
+      
+  } # end of input goBUtton_2, rethink, does that really work in all cases? needs to be later possible when all other options start working
+  
+    })  #end of observer results  
   
   
-  }
-})    
+  
+  output$table_ioi <- renderTable({
+    
+    results_rhythm
+    
+  })
   
   output$calc <- renderText({
-    paste("The calculations are done. The results are:", results())})
+    paste("Once the results are done, they will appeare here. The results are:")})
           
 # ################################
 #     if (input$rec_plot == TRUE)
