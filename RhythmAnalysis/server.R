@@ -137,28 +137,35 @@ server <- function(input, output) {
          results_rhythm[a,2] <<- ioi_cv_unbiased
          ioi_all[[a]] <<- ioi
         
+         #ioi_seq <<- ioi
          
-         output$plot_ioi_beat <- renderPlot({
+         output$plot_ioi_beat <- renderPlotly({
            
-           ggplot(data = results_rhythm, aes(x= V1, y = V2))+
+           p <- ggplot(data = results_rhythm, aes(x= npvi, y = ioi_beat))+
              geom_point(na.rm = TRUE)+                         
-             ylab("Coefficient of Variation")+
+             ylab("nPVI")+
              xlab("IOI Beat [Hz]")
+           
+           p <- ggplotly(p)
+           
+           p
            
          })
          
-         output$plot_ioi_all <- renderPlot({
+         output$plot_ioi_all <- renderPlotly({
            
            ioi_all <<- as.data.frame(unlist(ioi_all))
                                      
-           gather(ioi_all, cols, value) %>% 
+           p <- gather(ioi_all, cols, value) %>% 
              ggplot(aes(x= value))+
              geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change binwidth here
              aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
              xlab("IOI [sec]")+                            
              ylab("Percentage [%]")+
              theme_minimal()
+           ggplotly(p)
            
+           p
          })
          
         #print(paste('IOI calc', a, 'of', length(list_of_files), 'done', sep =" "))
@@ -170,7 +177,27 @@ server <- function(input, output) {
         #beat_2 is an optional argument and can be set to the fft rhythm for example like this: [..]beat_2 = results_rhyth,[i,3]
         #print(paste('ugof', a, 'of', length(list_of_files), 'done', sep =" "))
         
-        #npvi(ioi_seq)
+        ### npvi calculations (ioi_seq) -----------
+         
+         ioi_seq <- drop_na(ioi)
+         z <- c()
+         b <- c()
+         
+         for (l in 1: nrow(ioi_seq)){
+           
+           z[l] <- (ioi_seq[l,1] - ioi_seq[l+1,1])
+           b[l] <- (ioi_seq[l,1] + ioi_seq[l+1,1])/2
+           
+         } #end of for loop
+         
+         z <- na.omit(z)
+         b <- na.omit(b)
+         c <- sum(abs(z/b))
+         
+         npvi <- c*(100/(length(z)-1))
+         
+         results_rhythm[a,3] <<- npvi #change back to 9 when all is running
+         
         #print(paste('npvi', a, 'of', length(list_of_files), 'done', sep =" "))
         
         #recurrence(data)
@@ -178,17 +205,20 @@ server <- function(input, output) {
      
         } #end for loop through list_of_files
       
-
-      
+     
       } #end of input$all == TRUE
       
      
-      
+      filenames <- as.data.frame(list_of_files)
+      results_rhythm <<- cbind(results_rhythm, filenames)
+      colnames(results_rhythm) <<- c("ioi_beat", "unbiased_cv",  "npvi", "filename")
       
 
       
   } # end of input goBUtton_2, rethink, does that really work in all cases? needs to be later possible when all other options start working
   
+    
+    
     })  #end of observer results  
   
   

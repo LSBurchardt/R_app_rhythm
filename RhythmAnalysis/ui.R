@@ -92,8 +92,8 @@ ui <- fluidPage(
                                   
                                   textOutput("calc"),
                                   tableOutput("table_ioi"),
-                                  plotOutput("plot_ioi_beat"),
-                                  plotOutput("plot_ioi_all")
+                                  plotlyOutput("plot_ioi_beat"),
+                                  plotlyOutput("plot_ioi_all")
                                   #textOutput("data_test")
                                   ##
                          ),
