@@ -38,21 +38,23 @@ ui <- fluidPage(
       column(3, 
              # Sidebar with input for analysis options and sampling rate for fourier analysis
              
-             checkboxInput("all", "Run all analysis and produce all plots.", value = TRUE),
-             checkboxInput("rec_plot", "Produce Recurrence Plots", value = FALSE),
-             checkboxInput("hist_plot", "Produce Histogram ", value = FALSE),
-             checkboxInput("npvi_calc", "Calcualte nPVI ", value = FALSE),
-             checkboxInput("ioi_beat", "Calculate IOI Beat ", value = FALSE),
-             checkboxInput("fft_calc", "Calculate Fourier Beat", value = FALSE),
-             checkboxInput("ugof_calc", "Calculate ugof", value = FALSE),
+             checkboxInput("all", "Run all analysis.", value = TRUE),
+             checkboxInput("rec_plot", "Produce Recurrence Plots", value = TRUE),
+             checkboxInput("hist_plot", "Produce Histogram ", value = TRUE),
              numericInput("fs", "Sampling Rate for Fourier Analysis",
                           min= 10, max= 1000, value=20),
              img(src="blank_space.png", width = "100%"),
              
-             selectInput("fileextension", "Choose file extension of data:",
+             selectInput("fileextension", "Choose file extension of input data:",
                          choices = c("csv", "xls")),
+             # selectInput("fileextension_output", "Choose file extension for output data:",
+             #             choices = c("csv", "xlsx")),
+             
+             textInput("savename", "ID for saving (i.e. test_species)", value = ""),
              
              img(src="blank_space.png", width = "100%"),
+             
+             
              
              #actionButton("dir", "Choose Directory"),
              actionButton("goButton_1","Choose folder"),
@@ -83,6 +85,7 @@ ui <- fluidPage(
              tabsetPanel(type = "tabs",
                          tabPanel("Data",
                                   textOutput("files"),
+                                  textOutput("files_out"),
                                   tableOutput("list_files"),
                                   tableOutput("table_input_data"),
                                   textOutput("loop_a"),

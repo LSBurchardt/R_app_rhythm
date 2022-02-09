@@ -50,9 +50,14 @@ server <- function(input, output) {
   pattern <- reactive({input$fileextension})
   
   output$files <- renderText({
-    paste("You chose the following file extension pattern", pattern(), ".")
+    paste("You chose the following file extension pattern of the input data", pattern(), ".")
   })
   
+  # pattern_out <- reactive({input$fileextension_output})
+  # 
+  # output$files_out <- renderText({
+  #   paste("You chose the following file extension pattern for the output data", pattern_out(), ".")
+  # })
   
   observe({
     if(input$goButton_1 > 0){
@@ -67,6 +72,7 @@ server <- function(input, output) {
     
   })
   
+
   
   #reactive expression df.sub: generates subset of all datapoints for chosen parameters in app
   results <- observe({
@@ -231,6 +237,42 @@ server <- function(input, output) {
   
   output$calc <- renderText({
     paste("Once the results are done, they will appeare here. The results are:")})
+  
+  
+## 05: Download Results --------------
+  
+  datasetInput <- reactive({
+    
+    results_rhythm
+    
+    # sub.df.hov.data<-df.sub.hov()
+    # sub.df.hov.data<-sub.df.hov.data %>% 
+    #   dplyr::group_by(dist.trav.int, week) %>% 
+    #   summarise_all(list(mean=~mean(.,na.rm=TRUE))) %>% 
+    #   as.data.frame() 
+    
+    # sub.df.hov.data$dist.trav.int<-as.numeric(as.character(sub.df.hov.data$dist.trav.int))
+    # sub.df.hov.data$week<-as.POSIXct(sub.df.hov.data$week)
+    # 
+    # switch(input$dataset,
+    #        "Time Series Data" = df.sub.timeseries(),
+    #        
+    #        "Transect Data" = df.sub.transect2(),
+    #        
+    #        "Hovmoeller Data" = sub.df.hov.data
+    #)
+  })
+  
+  
+  
+  output$downloadData <- downloadHandler(
+    filename = function(){
+      paste("rhythm_analysis_", input$savename,"_fs_",input$fs,".csv", sep = "")
+    },
+    content = function(file){
+      write.csv(datasetInput(), file, row.names = FALSE)
+    }
+  )
           
 # ################################
 #     if (input$rec_plot == TRUE)
