@@ -54,8 +54,6 @@ ui <- fluidPage(
              
              img(src="blank_space.png", width = "100%"),
              
-             
-             
              #actionButton("dir", "Choose Directory"),
              actionButton("goButton_1","Choose folder"),
             
@@ -66,6 +64,10 @@ ui <- fluidPage(
              
              actionButton("goButton_2","GO"),
              #submitButton("Run Analysis"),
+             
+             img(src="blank_space.png", width = "100%"),
+             
+             actionButton("resetAll", "Reset all"),
              
              img(src="blank_space.png", width = "100%"),
              
@@ -100,6 +102,9 @@ ui <- fluidPage(
                                   #textOutput("data_test")
                                   ##
                          ),
+                         tabPanel("Recurrence Plots",
+                                  ##
+                                  ),
                          tabPanel("Help",
                                   ##
                          )

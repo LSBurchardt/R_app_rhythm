@@ -13,6 +13,7 @@
 library(shiny)
 library(shinyFiles)
 library(shinybusy)
+library(shinyjs)
 library(tidyverse)
 library(readxl)
 library(openxlsx)
@@ -22,6 +23,7 @@ library(SynchWave)    # for fourier.R, fftshift
 library(vegan)        # for recurrence.R, to calculate euclidean distance
 library(corrplot)     # for recurrence.R, multiple plots
 library(plotly)       # for recurrence.R, interactive recurrence plots
+library(DT)
 
 # 01: load functions -- -------------------------------------------------------------
 
