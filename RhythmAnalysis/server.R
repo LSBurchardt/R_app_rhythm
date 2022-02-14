@@ -86,8 +86,16 @@ server <- function(input, output) {
       results_rhythm <<- data.frame()      # <<- global assignment operator, needs to be used when changing as well
       ioi_all <<- list(NA)
   
-      
-       for (a in 1:length(list_of_files)) {
+      output$plots <- renderUI({
+        plot_output_list <- lapply(1:length(list_of_files), function(i) {
+          plotname <- paste("plot", i, sep="")
+          plotOutput(plotname)
+        }) # end lapply
+        
+        do.call(tagList, plot_output_list)
+      }) 
+    
+     for (a in 1:length(list_of_files)) {
          
         ## load data ----------
          
@@ -389,7 +397,7 @@ server <- function(input, output) {
         ## recurrence plot -------
         
          if (input$rec_plot == TRUE){
-           
+           local({
            
            ioi_seq <- data.frame()                 # set up empty dataframe to store ioi values in
            
@@ -426,6 +434,7 @@ server <- function(input, output) {
                Var1 = factor(Var1, levels = levels),
                Var2 = factor(gsub("V", "", Var2), levels = levels)
              )
+           
            ## recurrence plot 
            output$rec_plot <- renderPlot({
              
@@ -444,61 +453,27 @@ server <- function(input, output) {
            ## loop version
            #https://stackoverflow.com/questions/22840892/r-shiny-loop-to-display-multiple-plots
            #part 1: define dynamic output
-           output$plots <- renderUI({
-             plot_output_list <- lapply(1:length(list_of_files), function(a) {
-               plotname <- paste("plot", a, sep="")
-               plotOutput(plotname)
-             }) # end lapply
-             
-             do.call(tagList, plot_output_list)
-           }) ##End outputplots
+           # output$plots <- renderUI({
+           #   plot_output_list <- lapply(1:length(list_of_files), function(i) {
+           #     plotname <- paste("plot", i, sep="")
+           #     plotOutput(plotname)
+           #   }) # end lapply
+           # 
+           #   do.call(tagList, plot_output_list)
+           # }) ##End outputplots
         
            # part 2: print plots
-           PrintPlots <- observe({
+           #observe({
              # Call renderPlot for each one. Plots are only actually generated when they
              # are visible on the web page.
              
-             for (a in 1:length(list_of_files)) {
+             #for (i in 1:length(list_of_files)) {
                # Need local so that each item gets its own number. Without it, the value
                # of i in the renderPlot() will be the same across all instances, because
                # of when the expression is evaluated.
-               local({
-                 my_a <- a
-                 plotname <- paste("plot", my_a, sep="")
-                 
-                 # calculations for plot
-                 for (x in  1:nrow(data)) {          # start of loop through rows of data to calculate iois
-                   
-                   z = x+1
-                   ioi_seq[x,1] <- data[z,1]-data[x,1]
-                   
-                 }
-                 
-                 ##  recurrence matrix
-                 
-                 # euclidian distance matrix 
-                 
-                 eucl_dist <- (as.matrix(vegdist(ioi_seq, "euclidean", na.rm = TRUE)))
-                 eucl_dist <- eucl_dist[1:(nrow(eucl_dist)-1),1:(nrow(eucl_dist)-1) ]
-                 
-                 threshold <- mean(ioi_seq$X1, na.rm = TRUE)*0.1 # as input?
-                 
-                 eucl_dist[eucl_dist < threshold] <- 0
-                 
-                 # transform matrix as to be able to plot it with ggplot as tile plot
-                 #https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2
-                 
-                 levels <- 1:(nrow(eucl_dist))
-                 
-                 eucl_dist_2 <- eucl_dist %>%
-                   tibble::as_tibble() %>%
-                   rownames_to_column('Var1') %>%
-                   gather(Var2, value, -Var1) %>%
-                   mutate(
-                     Var1 = factor(Var1, levels = levels),
-                     Var2 = factor(gsub("V", "", Var2), levels = levels)
-                   )
-                 # end: calculations for plot
+               #local({
+                 my_i <- a
+                 plotname <- paste("plot", my_i, sep="")
                  
                  output[[plotname]] <- renderPlot({
                    
@@ -514,8 +489,8 @@ server <- function(input, output) {
                    
                  }) # end renderPlot
                }) # end local
-             }##### End for Loop
-           })# END OF PRINT PLOTS
+            #}##### End for Loop
+           #})# END OF Observer PRINT PLOTS
            
            
          } else {NULL}       ## end recurrence plot 
@@ -534,9 +509,9 @@ server <- function(input, output) {
       
 
       
-  } # end of input goBUtton_2, rethink, does that really work in all cases? needs to be later possible when all other options start working
+   # end of input goBUtton_2, rethink, does that really work in all cases? needs to be later possible when all other options start working
   
-    
+  } 
     
 })  #end of observer results  
   
@@ -588,66 +563,5 @@ server <- function(input, output) {
     }
   )
           
-## 07: Tab Recurrence Plots -------------
-  
-  #   observe({
-  #     
-  # if (input$rec_plot == TRUE){
-  # 
-  # 
-  # ioi_seq <- data.frame()                 # set up empty dataframe to store ioi values in
-  # 
-  # #for (a in filenumber){             #start of loop for number of files, needs to be added, maybe better add in main!
-  # 
-  # for (x in  1:nrow(data)) {          # start of loop through rows of data to calculate iois
-  # 
-  #   z = x+1
-  #   ioi_seq[x,1] <- data[z,1]-data[x,1]
-  # 
-  # }
 
-  ## 02: recurrence matrix ---------------------
-
-  #euclidian distance matrix (when using phillips way)
-
-  # eucl_dist <- (as.matrix(vegdist(ioi_seq, "euclidean", na.rm = TRUE)))
-  # eucl_dist <- eucl_dist[1:(nrow(eucl_dist)-1),1:(nrow(eucl_dist)-1) ]
-  # 
-  # threshold <- mean(ioi_seq$X1, na.rm = TRUE)*0.1 # as input?
-  # 
-  # eucl_dist[eucl_dist < threshold] <- 0
-
-  # transform matrix as to be able to plot it with ggplot as tile plot
-  #https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2
-
-  # levels <- 1:(nrow(eucl_dist))
-  # 
-  # eucl_dist_2 <- eucl_dist %>%
-  #   tibble::as_tibble() %>%
-  #   rownames_to_column('Var1') %>%
-  #   gather(Var2, value, -Var1) %>%
-  #   mutate(
-  #     Var1 = factor(Var1, levels = levels),
-  #     Var2 = factor(gsub("V", "", Var2), levels = levels)
-  #   )
-  ## 03: recurrence plot -----------------
-
-  # p <- ggplot(eucl_dist_2, aes(Var1, Var2)) +
-  #   geom_tile(aes(fill = value)) +
-  #   #geom_text(aes(label = round(value, 1))) +
-  #   scale_fill_gradient(low = "white", high = "black")
-  # 
-  # 
-  # ggplotly(p)
-  #} else {NULL}
-
-  #})
-
-  
-#     if (input$hist_plot == TRUE)
-#      # ioi_hist_plot() else {NULL} 
-#     print("ioi") else {NULL}
-   
-
-  
 } #end server function
