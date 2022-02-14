@@ -103,8 +103,7 @@ ui <- fluidPage(
                                   ##
                          ),
                          tabPanel("Recurrence Plots",
-                                  uiOutput("plots"),
-                                  plotOutput("rec_plot")
+                                  uiOutput("plots")
                                   ##
                                   ),
                          tabPanel("Help",

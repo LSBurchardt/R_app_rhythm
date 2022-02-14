@@ -58,6 +58,7 @@ server <- function(input, output) {
   # output$files_out <- renderText({
   #   paste("You chose the following file extension pattern for the output data", pattern_out(), ".")
   # })
+  
   # Directory and Files
   observe({
     if(input$goButton_1 > 0){
@@ -72,8 +73,6 @@ server <- function(input, output) {
     
   })
   
-
-  
   # 04c: Calculations ---------------
   results <- observe({
     
@@ -86,14 +85,6 @@ server <- function(input, output) {
       results_rhythm <<- data.frame()      # <<- global assignment operator, needs to be used when changing as well
       ioi_all <<- list(NA)
   
-      output$plots <- renderUI({
-        plot_output_list <- lapply(1:length(list_of_files), function(i) {
-          plotname <- paste("plot", i, sep="")
-          plotOutput(plotname)
-        }) # end lapply
-        
-        do.call(tagList, plot_output_list)
-      }) 
     
      for (a in 1:length(list_of_files)) {
          
@@ -116,12 +107,6 @@ server <- function(input, output) {
 
          output$loop_a <- renderText({
            paste("We finished loop", a , "of", length(list_of_files))})
-       
-        
-        #multiple problems with the xlsx files: for now, we do not allow xlsx
-        
-        #binary(data)
-        #print(paste('Binary', a, 'of', length(list_of_files), 'done', sep =" "))
         
          output$table_input_data <- renderTable({
                 data
@@ -306,9 +291,7 @@ server <- function(input, output) {
         ## end fourier
          
         ## ugof ------------- 
-        #ugof(data = data, beat = results_rhythm[a,1], beat_2 = NA )# ,beat_2 = results_rhythm[a,3] ) # i being the looping variable through rows in the results_rhythm dataframe
-        #beat_2 is an optional argument and can be set to the fft rhythm for example like this: [..]beat_2 = results_rhyth,[i,3]
-         
+        
          data_ugof <- pull(data[,1])
          beat_ioi <- results_rhythm[a,1]
          beat_fft <- results_rhythm[a,4]
@@ -397,6 +380,18 @@ server <- function(input, output) {
         ## recurrence plot -------
         
          if (input$rec_plot == TRUE){
+           
+           ## loop version for recurrence plots
+           #https://stackoverflow.com/questions/22840892/r-shiny-loop-to-display-multiple-plots
+           output$plots <- renderUI({
+             plot_output_list <- lapply(1:length(list_of_files), function(i) {
+               plotname <- paste("plot", i, sep="")
+               plotlyOutput(plotname)
+             }) # end lapply
+             
+             do.call(tagList, plot_output_list)
+           }) 
+           
            local({
            
            ioi_seq <- data.frame()                 # set up empty dataframe to store ioi values in
@@ -436,64 +431,25 @@ server <- function(input, output) {
              )
            
            ## recurrence plot 
-           output$rec_plot <- renderPlot({
-             
-           rec_plot <- ggplot(eucl_dist_2, aes(Var1, Var2)) +
-             geom_tile(aes(fill = value)) +
-             #geom_text(aes(label = round(value, 1))) +
-             scale_fill_gradient(low = "white", high = "black")
-
-
-           #ggplotly(rec_plot)
            
-           rec_plot
-           })
-           
-           
-           ## loop version
-           #https://stackoverflow.com/questions/22840892/r-shiny-loop-to-display-multiple-plots
-           #part 1: define dynamic output
-           # output$plots <- renderUI({
-           #   plot_output_list <- lapply(1:length(list_of_files), function(i) {
-           #     plotname <- paste("plot", i, sep="")
-           #     plotOutput(plotname)
-           #   }) # end lapply
-           # 
-           #   do.call(tagList, plot_output_list)
-           # }) ##End outputplots
-        
-           # part 2: print plots
-           #observe({
-             # Call renderPlot for each one. Plots are only actually generated when they
-             # are visible on the web page.
-             
-             #for (i in 1:length(list_of_files)) {
-               # Need local so that each item gets its own number. Without it, the value
-               # of i in the renderPlot() will be the same across all instances, because
-               # of when the expression is evaluated.
-               #local({
                  my_i <- a
                  plotname <- paste("plot", my_i, sep="")
                  
-                 output[[plotname]] <- renderPlot({
+                 output[[plotname]] <- renderPlotly({
                    
-                   #works with another plot, such as the example below...
-                   #ggplot(mtcars, aes(x = mpg, y = cyl))+
-                    #  geom_point()
-                   
-                   ggplot(eucl_dist_2, aes(Var1, Var2)) +
+                                      rec_plot <- ggplot(eucl_dist_2, aes(Var1, Var2)) +
                    geom_tile(aes(fill = value)) +
                    # geom_text(aes(label = round(value, 1))) +
                    scale_fill_gradient(low = "white", high = "black")
                    
+                   rec_plot <- ggplotly(rec_plot)
+                   
+                   rec_plot
                    
                  }) # end renderPlot
                }) # end local
-            #}##### End for Loop
-           #})# END OF Observer PRINT PLOTS
            
-           
-         } else {NULL}       ## end recurrence plot 
+         } else {NULL}       ## end if recurrence plot 
          
         } #end for loop through list_of_files
       
@@ -514,8 +470,6 @@ server <- function(input, output) {
   } 
     
 })  #end of observer results  
-  
-  
   
 
   output$table_ioi <- renderTable({
