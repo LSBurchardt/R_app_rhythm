@@ -68,7 +68,15 @@ server <- function(input, output) {
       list_of_files <<- list.files(path = path, pattern = pattern)
       
       output$list_files <- renderTable({
-        list.files(path = path, pattern = pattern)})
+        #list.files(path = path, pattern = pattern)
+        
+        list <-list.files(path = path, pattern = pattern)
+        list <- as.data.frame(list)
+        
+        list$index <- row.names(list)
+        colnames(list) <- c("file", "index")
+        list
+        })
     }
     
   })
@@ -94,16 +102,16 @@ server <- function(input, output) {
 
         if (input$fileextension == 'csv'){
           data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ",", col_names = TRUE)
-        } #else if (input$fileextension == "xls"){
-          #data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = FALSE)
-          #colnames(data) <- c("X1", "X2", "X3")
+        } else if (input$fileextension == "xls"){
+          data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = FALSE)
+          colnames(data) <- c("X1", "X2", "X3")
         #} else if (input$fileextension == "xlsx") {
         #  data <- read.xlsx(paste(path, list_of_files[a], sep = "\\"), sheet = 1, colNames = FALSE)
         #  colnames(data) <- c("X1", "X2", "X3")
         #} else {
         #  print("Please choose a different file format: either .csv or .xls")
         #  stop()
-        #}
+        }
 
          output$loop_a <- renderText({
            paste("We finished loop", a , "of", length(list_of_files))})
@@ -132,9 +140,9 @@ server <- function(input, output) {
          
          
          #add parameters to results
-         
-         results_rhythm[a,1] <<- ioi_beat 
-         results_rhythm[a,2] <<- ioi_cv_unbiased
+         results_rhythm[a,1] <<- a
+         results_rhythm[a,2] <<- ioi_beat 
+         results_rhythm[a,3] <<- ioi_cv_unbiased
          ioi_all[[a]] <<- ioi
         
          #ioi_seq <<- ioi
@@ -190,7 +198,7 @@ server <- function(input, output) {
          
          npvi <- c*(100/(length(z)-1))
          
-         results_rhythm[a,3] <<- npvi #change back to 9 when all is running
+         results_rhythm[a,4] <<- npvi #change back to 9 when all is running
          
         ## end npvi 
         
@@ -282,10 +290,10 @@ server <- function(input, output) {
          
          #save data
          
-         results_rhythm[a,4] <<- peaks$freq[2] #change row index to soft coding once loops are in place [i,3]
-         results_rhythm[a,5] <<- df            # frequency resolution
-         results_rhythm[a,6] <<- kk            # number of elements 
-         results_rhythm[a,7] <<- L             # length of signal
+         results_rhythm[a,5] <<- peaks$freq[2] #change row index to soft coding once loops are in place [i,3]
+         results_rhythm[a,6] <<- df            # frequency resolution
+         results_rhythm[a,7] <<- kk            # number of elements 
+         results_rhythm[a,8] <<- L             # length of signal
          
          ### end fourier calc
         ## end fourier
@@ -333,7 +341,7 @@ server <- function(input, output) {
          
          m_ugof_beat_1 <- median(ugof_value_beat[2:length(ugof_value_beat)])
          
-         results_rhythm[a,8] <<- m_ugof_beat_1 ##change back to 7 when all is running
+         results_rhythm[a,9] <<- m_ugof_beat_1 ##change back to 7 when all is running
          
          ## ugof Fourier
          
@@ -370,9 +378,10 @@ server <- function(input, output) {
            
             m_ugof_beat_2 <- median(ugof_value_beat_2[2:length(ugof_value_beat_2)])
            
-            results_rhythm[a,9] <<- m_ugof_beat_2 } else {
+            results_rhythm[a,10] <<- m_ugof_beat_2} else {
               
-              results_rhythm[a,9] <<- NA
+              results_rhythm[a,10] <<- NA
+              
             }
          
         ## end ugof
@@ -437,10 +446,12 @@ server <- function(input, output) {
                  
                  output[[plotname]] <- renderPlotly({
                    
-                                      rec_plot <- ggplot(eucl_dist_2, aes(Var1, Var2)) +
+                  rec_plot <- ggplot(eucl_dist_2, aes(Var1, Var2)) +
                    geom_tile(aes(fill = value)) +
                    # geom_text(aes(label = round(value, 1))) +
-                   scale_fill_gradient(low = "white", high = "black")
+                   scale_fill_gradient(low = "white", high = "black")+
+                   xlab("#IOI")+
+                   ylab("#IOI")
                    
                    rec_plot <- ggplotly(rec_plot)
                    
@@ -461,7 +472,7 @@ server <- function(input, output) {
       filenames <- as.data.frame(list_of_files)
       fs <- input$fs
       results_rhythm <<- cbind(results_rhythm, fs, filenames)
-      colnames(results_rhythm) <<- c("ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso", "n_elements","signal_length","ugof_ioi","ugof_fft", "fs", "filename")
+      colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso", "n_elements","signal_length","ugof_ioi","ugof_fft", "fs", "filename")
       
 
       

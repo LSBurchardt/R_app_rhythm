@@ -40,7 +40,6 @@ ui <- fluidPage(
              
              checkboxInput("all", "Run all analysis.", value = TRUE),
              checkboxInput("rec_plot", "Produce Recurrence Plots", value = TRUE),
-             checkboxInput("hist_plot", "Produce Histogram ", value = TRUE),
              numericInput("fs", "Sampling Rate for Fourier Analysis",
                           min= 10, max= 1000, value=20),
              img(src="blank_space.png", width = "100%"),
@@ -89,7 +88,7 @@ ui <- fluidPage(
                                   textOutput("files"),
                                   textOutput("files_out"),
                                   tableOutput("list_files"),
-                                  tableOutput("table_input_data"),
+                                  #tableOutput("table_input_data"),
                                   textOutput("loop_a"),
                                   #plotlyOutput("plot_timeseries", inline = TRUE)
                          ),
@@ -103,6 +102,12 @@ ui <- fluidPage(
                                   ##
                          ),
                          tabPanel("Recurrence Plots",
+                                  # numericInput("file_nr", "File Nr. to rerun analysis",
+                                  #              min= 1, max= 1000, value=1),
+                                  # numericInput("start", "Start IOI for analysis",
+                                  #              min= 1, max= 1000, value=1),
+                                  # numericInput("end", "End IOI for analysis",
+                                  #              min= 1, max= 1000, value=50),
                                   uiOutput("plots")
                                   ##
                                   ),
