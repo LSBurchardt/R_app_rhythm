@@ -394,6 +394,17 @@ server <- function(input, output) {
          
          
          ###recurrence ugof -------------
+         output$rec_ugof_plots <- renderUI({
+           plot_output_list <- lapply(1:length(list_of_files), function(i) {
+             plotname <- paste("ugof_plot", i, sep="")
+             plotlyOutput(plotname, height = 450, width = 450)
+           }) # end lapply
+           
+           do.call(tagList, plot_output_list)
+         }) 
+         
+         local({
+         
          eucl_dist_ugof <- (as.matrix(vegdist(ugof_value_beat, "euclidean", na.rm = TRUE)))
          eucl_dist_ugof <- eucl_dist_ugof[1:(nrow(eucl_dist_ugof)-1),1:(nrow(eucl_dist_ugof)-1) ]
          
@@ -415,16 +426,20 @@ server <- function(input, output) {
              Var2 = factor(gsub("V", "", Var2), levels = levels)
            )
          
-         output$rec_plot_ugof <- renderPlotly({
-           
-         rec_plot_ugof <- ggplot(eucl_dist_ugof_2, aes(Var1, Var2)) +
+         my_i <- a
+         plotname <- paste("ugof_plot", my_i, sep="")
+         
+         
+         output[[plotname]] <- renderPlotly({
+          
+        rec_plot_ugof <- ggplot(eucl_dist_ugof_2, aes(Var1, Var2)) +
            geom_tile(aes(fill = value)) +
            # geom_text(aes(label = round(value, 1))) +
            scale_fill_gradient(low = "white", high = "black")+
            xlab("#ugof")+
            ylab("#ugof")+
            coord_fixed(ratio=1)+
-           #ggtitle(paste("File: ", results_rhythm$filename[my_i]))+
+           ggtitle(paste("ugof, File: ", results_rhythm$filename[my_i]))+
            theme_minimal()+
            theme(
              plot.background = element_rect(fill = "white"),
@@ -434,6 +449,7 @@ server <- function(input, output) {
          
          rec_plot_ugof
          
+         })
          })
          ### end recurrence ugof
          results_rhythm[a,9] <<- m_ugof_beat_1 
@@ -548,7 +564,7 @@ server <- function(input, output) {
                    xlab("#IOI")+
                    ylab("#IOI")+
                   coord_fixed(ratio=1)+
-                  ggtitle(paste("File: ", results_rhythm$filename[my_i]))+
+                  ggtitle(paste("IOI, File: ", results_rhythm$filename[my_i]))+
                   theme_minimal()+
                   theme(
                     plot.background = element_rect(fill = "white"),

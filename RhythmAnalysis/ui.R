@@ -118,7 +118,7 @@ ui <- fluidPage(
                                   uiOutput("plots")
                                   ),
                                   column(6,
-                                  plotlyOutput("rec_plot_ugof"))
+                                  uiOutput("rec_ugof_plots"))
                                   ##
                                   ),
                          tabPanel("Help",
