@@ -39,7 +39,7 @@
 server <- function(input, output) {
   
   
-   # 04a: author  ------------------------------------------    
+  # 04a: author  ------------------------------------------    
   output$authors <- renderText({
     paste("written by Dr. Lara S. Burchardt")
   })
@@ -96,12 +96,13 @@ server <- function(input, output) {
     
      for (a in 1:length(list_of_files)) {
          
-        ## load data ----------
+      ## load data ----------
          
          #be aware: if you have column names: set col_names = TRUE! if not: col_names = FALSE
 
         if (input$fileextension == 'csv'){
-          data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ",", col_names = TRUE)
+          data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ",", col_names = FALSE)
+          colnames(data) <- c("X1", "X2", "X3")
         } else if (input$fileextension == "xls"){
           data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = FALSE)
           colnames(data) <- c("X1", "X2", "X3")
@@ -118,7 +119,7 @@ server <- function(input, output) {
          output$table_input_data <- renderTable({
                 data
          })
-         ## ioi calc & plot ----------
+        ## ioi calc & plot ----------
          ioi <- data.frame()                 # set up empty dataframe to store ioi values in
          
          #for (a in filenumber){             #start of loop for number of files, needs to be added, maybe better add in main! 
@@ -352,8 +353,8 @@ server <- function(input, output) {
         
          data_ugof <- data$X1
          #data_ugof <- pull(data[,1])
-         beat_ioi <- results_rhythm[a,1]
-         beat_fft <- results_rhythm[a,4]
+         beat_ioi <- results_rhythm[a,2]
+         beat_fft <- results_rhythm[a,5]
 
          # calculate goodness-of-fit for IOI analysis and Fourier analysis
          
@@ -397,7 +398,7 @@ server <- function(input, output) {
          output$rec_ugof_plots <- renderUI({
            plot_output_list <- lapply(1:length(list_of_files), function(i) {
              plotname <- paste("ugof_plot", i, sep="")
-             plotlyOutput(plotname, height = 450, width = 450)
+             plotlyOutput(plotname, height = 400, width = 400)
            }) # end lapply
            
            do.call(tagList, plot_output_list)
@@ -439,7 +440,7 @@ server <- function(input, output) {
            xlab("#ugof")+
            ylab("#ugof")+
            coord_fixed(ratio=1)+
-           ggtitle(paste("ugof, File: ", results_rhythm$filename[my_i]))+
+           ggtitle(paste("ugof ioi, File: ", results_rhythm$filename[my_i]))+
            theme_minimal()+
            theme(
              plot.background = element_rect(fill = "white"),
@@ -506,7 +507,7 @@ server <- function(input, output) {
            output$plots <- renderUI({
              plot_output_list <- lapply(1:length(list_of_files), function(i) {
                plotname <- paste("plot", i, sep="")
-               plotlyOutput(plotname, height = 450, width = 450)
+               plotlyOutput(plotname, height = 400, width = 400)
              }) # end lapply
              
              do.call(tagList, plot_output_list)
