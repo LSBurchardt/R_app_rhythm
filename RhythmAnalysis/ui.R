@@ -45,7 +45,7 @@ ui <- fluidPage(
              img(src="blank_space.png", width = "100%"),
              
              selectInput("fileextension", "Choose file extension of input data:",
-                         choices = c("csv", "xls")),
+                         choices = c("csv", "xls", "xlsx")),
              # selectInput("fileextension_output", "Choose file extension for output data:",
              #             choices = c("csv", "xlsx")),
              
@@ -71,7 +71,10 @@ ui <- fluidPage(
              img(src="blank_space.png", width = "100%"),
              
              downloadButton("downloadData", "Download Results"),
+             
+             img(src="blank_space.png", width = "100%"),
             
+             downloadButton("downloadPlot", "Download Recurrence Plots"),
              
              #tags$iframe(style="height:4px; width:1%; scrolling=yes", 
             #           src="manual.pdf"),
@@ -96,8 +99,11 @@ ui <- fluidPage(
                                   
                                   textOutput("calc"),
                                   tableOutput("table_ioi"),
-                                  plotlyOutput("plot_ioi_beat"),
+                                  plotlyOutput("plot_beat"),
+                                  plotlyOutput("plot_ugof"),
+                                  plotlyOutput("plot_var"),
                                   plotlyOutput("plot_ioi_all")
+                                  
                                   #textOutput("data_test")
                                   ##
                          ),
@@ -108,7 +114,11 @@ ui <- fluidPage(
                                   #              min= 1, max= 1000, value=1),
                                   # numericInput("end", "End IOI for analysis",
                                   #              min= 1, max= 1000, value=50),
+                                  column(6,
                                   uiOutput("plots")
+                                  ),
+                                  column(6,
+                                  plotlyOutput("rec_plot_ugof"))
                                   ##
                                   ),
                          tabPanel("Help",

@@ -105,13 +105,12 @@ server <- function(input, output) {
         } else if (input$fileextension == "xls"){
           data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = FALSE)
           colnames(data) <- c("X1", "X2", "X3")
-        #} else if (input$fileextension == "xlsx") {
-        #  data <- read.xlsx(paste(path, list_of_files[a], sep = "\\"), sheet = 1, colNames = FALSE)
-        #  colnames(data) <- c("X1", "X2", "X3")
-        #} else {
-        #  print("Please choose a different file format: either .csv or .xls")
-        #  stop()
-        }
+        } else if (input$fileextension == "xlsx") {
+          data <- read.xlsx(paste(path, list_of_files[a], sep = "\\"), sheet = 1, colNames = FALSE)
+          colnames(data) <- c("X1", "X2", "X3")
+        } else {NULL}
+
+        
 
          output$loop_a <- renderText({
            paste("We finished loop", a , "of", length(list_of_files))})
@@ -146,13 +145,63 @@ server <- function(input, output) {
          ioi_all[[a]] <<- ioi
         
          #ioi_seq <<- ioi
-         
-         output$plot_ioi_beat <- renderPlotly({
+         ### plot Beats ------------
+         output$plot_beat <- renderPlotly({
            
-           p <- ggplot(data = results_rhythm, aes(x= npvi, y = ioi_beat))+
-             geom_point(na.rm = TRUE)+                         
-             ylab("nPVI")+
-             xlab("IOI Beat [Hz]")
+           p <- ggplot(data = results_rhythm, )+
+             geom_jitter(aes(x = "IOI", y = ioi_beat, color = filename),
+                         width = 0.1, alpha = 0.8)+
+             geom_jitter(aes(x = "Fourier", y = fourier_beat, color = filename),
+                         width = 0.1, )+
+             ylab("Beat [Hz]")+
+             xlab("Beat Parameter")+
+             theme_minimal()+
+             ggtitle("Beat Results in Hertz")+
+             ylim(0,input$fs/2)
+           
+           p <- ggplotly(p)
+
+           p
+           
+         })
+         
+         
+         ### plot ugof ----------------
+         output$plot_ugof <- renderPlotly({
+           
+           p <- ggplot(data = results_rhythm)+
+             geom_jitter(aes(x = "IOI ugof", y = ugof_ioi, color = filename),
+                         width = 0.1,
+                         alpha = 0.8)+
+             geom_jitter(aes(x = "Fourier ugof", y = ugof_fft, color = filename),
+                         width = 0.1,
+                         alpha = 0.8)+
+             geom_jitter(aes(x = "Coefficient of Variation", y = unbiased_cv, color = filename),
+                         width = 0.1,
+                         alpha = 0.8)+
+             ylab("Value")+
+             xlab("Parameter")+
+             theme_minimal()+
+             ggtitle("Goodness of Fit an Coefficient of Variation")+
+             ylim(0,1)
+           
+           p <- ggplotly(p)
+           
+           p
+           
+         })
+         ### plot Variability Parameter ----------
+         output$plot_var <- renderPlotly({
+           
+           p <- ggplot(data = results_rhythm)+
+             geom_jitter(aes(x = "npvi", y = npvi, color = filename),
+                         width = 0.1,
+                         alpha = 0.8)+
+             ylab("Value")+
+             xlab("")+
+             theme_minimal()+
+             ggtitle("normalized Pairwise Variability Index")+
+             ylim(0,max(results_rhythm$npvi))
            
            p <- ggplotly(p)
            
@@ -160,6 +209,7 @@ server <- function(input, output) {
            
          })
          
+         ### ioi hist --------------------
          output$plot_ioi_all <- renderPlotly({
            
            ioi_all <<- as.data.frame(unlist(ioi_all))
@@ -300,7 +350,8 @@ server <- function(input, output) {
          
         ## ugof ------------- 
         
-         data_ugof <- pull(data[,1])
+         data_ugof <- data$X1
+         #data_ugof <- pull(data[,1])
          beat_ioi <- results_rhythm[a,1]
          beat_fft <- results_rhythm[a,4]
 
@@ -341,7 +392,51 @@ server <- function(input, output) {
          
          m_ugof_beat_1 <- median(ugof_value_beat[2:length(ugof_value_beat)])
          
-         results_rhythm[a,9] <<- m_ugof_beat_1 ##change back to 7 when all is running
+         
+         ###recurrence ugof -------------
+         eucl_dist_ugof <- (as.matrix(vegdist(ugof_value_beat, "euclidean", na.rm = TRUE)))
+         eucl_dist_ugof <- eucl_dist_ugof[1:(nrow(eucl_dist_ugof)-1),1:(nrow(eucl_dist_ugof)-1) ]
+         
+         threshold <- mean(ugof_value_beat, na.rm = TRUE)*0.1 # as input?
+         
+         eucl_dist_ugof[eucl_dist_ugof < threshold] <- 0
+         
+         # transform matrix as to be able to plot it with ggplot as tile plot
+         #https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2
+         
+         levels <- 1:(nrow(eucl_dist_ugof))
+         
+         eucl_dist_ugof_2 <- eucl_dist_ugof %>%
+           tibble::as_tibble() %>%
+           rownames_to_column('Var1') %>%
+           gather(Var2, value, -Var1) %>%
+           mutate(
+             Var1 = factor(Var1, levels = levels),
+             Var2 = factor(gsub("V", "", Var2), levels = levels)
+           )
+         
+         output$rec_plot_ugof <- renderPlotly({
+           
+         rec_plot_ugof <- ggplot(eucl_dist_ugof_2, aes(Var1, Var2)) +
+           geom_tile(aes(fill = value)) +
+           # geom_text(aes(label = round(value, 1))) +
+           scale_fill_gradient(low = "white", high = "black")+
+           xlab("#ugof")+
+           ylab("#ugof")+
+           coord_fixed(ratio=1)+
+           #ggtitle(paste("File: ", results_rhythm$filename[my_i]))+
+           theme_minimal()+
+           theme(
+             plot.background = element_rect(fill = "white"),
+             panel.grid = element_blank())
+         
+         rec_plot_ugof<- ggplotly(rec_plot_ugof)
+         
+         rec_plot_ugof
+         
+         })
+         ### end recurrence ugof
+         results_rhythm[a,9] <<- m_ugof_beat_1 
          
          ## ugof Fourier
          
@@ -395,7 +490,7 @@ server <- function(input, output) {
            output$plots <- renderUI({
              plot_output_list <- lapply(1:length(list_of_files), function(i) {
                plotname <- paste("plot", i, sep="")
-               plotlyOutput(plotname)
+               plotlyOutput(plotname, height = 450, width = 450)
              }) # end lapply
              
              do.call(tagList, plot_output_list)
@@ -451,7 +546,13 @@ server <- function(input, output) {
                    # geom_text(aes(label = round(value, 1))) +
                    scale_fill_gradient(low = "white", high = "black")+
                    xlab("#IOI")+
-                   ylab("#IOI")
+                   ylab("#IOI")+
+                  coord_fixed(ratio=1)+
+                  ggtitle(paste("File: ", results_rhythm$filename[my_i]))+
+                  theme_minimal()+
+                  theme(
+                    plot.background = element_rect(fill = "white"),
+                    panel.grid = element_blank())
                    
                    rec_plot <- ggplotly(rec_plot)
                    
@@ -471,8 +572,9 @@ server <- function(input, output) {
       
       filenames <- as.data.frame(list_of_files)
       fs <- input$fs
-      results_rhythm <<- cbind(results_rhythm, fs, filenames)
-      colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso", "n_elements","signal_length","ugof_ioi","ugof_fft", "fs", "filename")
+      savename <- input$savename
+      results_rhythm <<- cbind(results_rhythm, fs, filenames, savename)
+      colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso", "n_elements","signal_length","ugof_ioi","ugof_fft", "fs", "filename", "savename")
       
 
       
@@ -511,7 +613,8 @@ server <- function(input, output) {
   })
     
 ## 06: Download Results --------------
-  
+
+  ## Dataset Results
   datasetInput <- reactive({
     
     results_rhythm
@@ -527,6 +630,19 @@ server <- function(input, output) {
       write.csv(datasetInput(), file, row.names = FALSE)
     }
   )
-          
+   
+  ## Recurrence Plots  
+  # https://stackoverflow.com/questions/66788578/shiny-export-multiple-figures-dynamically-created-through-renderui
 
+  output$downloadPlot <- downloadHandler(
+    filename = function(){
+      paste("recurrence_plot",plotname,  input$savename,"_fs_",input$fs,".jpg", sep = "")
+    },
+    content = function(file){
+      png(file)
+      print(output$plot_ugof)
+      dev.off()
+    }
+  )
+  
 } #end server function
