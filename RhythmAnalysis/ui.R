@@ -35,12 +35,12 @@ ui <- fluidPage(
            ),
            offset = 3),
     fluidRow( 
-      column(3, 
+      column(2, 
              # Sidebar with input for analysis options and sampling rate for fourier analysis
              
              checkboxInput("all", "Run all analysis.", value = TRUE),
              checkboxInput("rec_plot", "Produce Recurrence Plots", value = TRUE),
-             numericInput("fs", "Sampling Rate for Fourier Analysis",
+             numericInput("fs", "Sampling Rate (FS) for Fourier Analysis",
                           min= 10, max= 1000, value=20),
              img(src="blank_space.png", width = "100%"),
              
@@ -66,7 +66,7 @@ ui <- fluidPage(
              
              img(src="blank_space.png", width = "100%"),
              
-             actionButton("resetAll", "Reset all"),
+             actionButton("resetAll", "Reset FS"),
              
              img(src="blank_space.png", width = "100%"),
              
@@ -74,14 +74,14 @@ ui <- fluidPage(
              
              img(src="blank_space.png", width = "100%"),
             
-             downloadButton("downloadPlot", "Download Recurrence Plots"),
+             #downloadButton("downloadPlot", "Download Recurrence Plots"),
              
              #tags$iframe(style="height:4px; width:1%; scrolling=yes", 
             #           src="manual.pdf"),
              offset = 1
              ),
       # Show plots of the data
-      column(8, 
+      column(9, 
              #add_busy_bar(color = "red", height = "8px"),
              add_busy_spinner(spin = "fading-circle"),
              textOutput("authors"),  #added to mention authors
@@ -108,22 +108,34 @@ ui <- fluidPage(
                                   ##
                          ),
                          tabPanel("Recurrence Plots",
-                                  # numericInput("file_nr", "File Nr. to rerun analysis",
-                                  #              min= 1, max= 1000, value=1),
-                                  # numericInput("start", "Start IOI for analysis",
-                                  #              min= 1, max= 1000, value=1),
-                                  # numericInput("end", "End IOI for analysis",
-                                  #              min= 1, max= 1000, value=50),
-                                  column(6,
+                                   
+                                  column(4,
                                   uiOutput("plots")
                                   ),
-                                  column(6,
-                                  uiOutput("rec_ugof_plots"))
+                                  column(4,
+                                  uiOutput("rec_ugof_plots")
+                                  ),
+                                  column(4,
+                                  uiOutput("rec_ugof_fft_plots"))
                                   ##
                                   ),
+                         tabPanel("Re-run analysis on Section",
+                                  numericInput("file_nr", "File Nr. to rerun analysis",
+                                               min= 1, max= 1000, value=1),
+                                  numericInput("start", "Start IOI for analysis",
+                                               min= 1, max= 1000, value=1),
+                                  numericInput("end", "End IOI for analysis",
+                                               min= 1, max= 1000, value=50),
+                                  actionButton("rerun_ioi", "Rerun on Section"),
+                                  
+                                  tableOutput("table_rerun")
+                                 ),
+                         tabPanel("Beat precision details",
+                                  ##
+                         ),
                          tabPanel("Help",
                                   ##
-                         )
+                                  )
                         ),
             
                )

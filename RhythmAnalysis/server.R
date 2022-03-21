@@ -92,7 +92,7 @@ server <- function(input, output) {
       
       results_rhythm <<- data.frame()      # <<- global assignment operator, needs to be used when changing as well
       ioi_all <<- list(NA)
-  
+      plot_list <<- list(NA)
     
      for (a in 1:length(list_of_files)) {
          
@@ -394,11 +394,11 @@ server <- function(input, output) {
          m_ugof_beat_1 <- median(ugof_value_beat[2:length(ugof_value_beat)])
          
          
-         ###recurrence ugof -------------
+         ###recurrence ugof ioi -------------
          output$rec_ugof_plots <- renderUI({
            plot_output_list <- lapply(1:length(list_of_files), function(i) {
              plotname <- paste("ugof_plot", i, sep="")
-             plotlyOutput(plotname, height = 400, width = 400)
+             plotlyOutput(plotname, height = 250, width = 250)
            }) # end lapply
            
            do.call(tagList, plot_output_list)
@@ -490,6 +490,67 @@ server <- function(input, output) {
            
             m_ugof_beat_2 <- median(ugof_value_beat_2[2:length(ugof_value_beat_2)])
            
+            ### recurrence ugof fft -------------
+            output$rec_ugof_fft_plots <- renderUI({
+              plot_output_list <- lapply(1:length(list_of_files), function(i) {
+                plotname <- paste("ugof_fft_plot", i, sep="")
+                plotlyOutput(plotname, height = 250, width = 250)
+              }) # end lapply
+              
+              do.call(tagList, plot_output_list)
+            }) 
+            
+            local({
+              
+              eucl_dist_ugof <- (as.matrix(vegdist(ugof_value_beat_2, "euclidean", na.rm = TRUE)))
+              eucl_dist_ugof <- eucl_dist_ugof[1:(nrow(eucl_dist_ugof)-1),1:(nrow(eucl_dist_ugof)-1) ]
+              
+              threshold <- mean(ugof_value_beat, na.rm = TRUE)*0.1 # as input?
+              
+              eucl_dist_ugof[eucl_dist_ugof < threshold] <- 0
+              
+              # transform matrix as to be able to plot it with ggplot as tile plot
+              #https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2
+              
+              levels <- 1:(nrow(eucl_dist_ugof))
+              
+              eucl_dist_ugof_2 <- eucl_dist_ugof %>%
+                tibble::as_tibble() %>%
+                rownames_to_column('Var1') %>%
+                gather(Var2, value, -Var1) %>%
+                mutate(
+                  Var1 = factor(Var1, levels = levels),
+                  Var2 = factor(gsub("V", "", Var2), levels = levels)
+                )
+              
+              my_i <- a
+              plotname <- paste("ugof_fft_plot", my_i, sep="")
+              
+              
+              output[[plotname]] <- renderPlotly({
+                
+                rec_plot_ugof <- ggplot(eucl_dist_ugof_2, aes(Var1, Var2)) +
+                  geom_tile(aes(fill = value)) +
+                  # geom_text(aes(label = round(value, 1))) +
+                  scale_fill_gradient(low = "white", high = "black")+
+                  xlab("#ugof")+
+                  ylab("#ugof")+
+                  coord_fixed(ratio=1)+
+                  ggtitle(paste("ugof fft, File: ", results_rhythm$filename[my_i]))+
+                  theme_minimal()+
+                  theme(
+                    plot.background = element_rect(fill = "white"),
+                    panel.grid = element_blank())
+                
+                rec_plot_ugof<- ggplotly(rec_plot_ugof)
+                
+                rec_plot_ugof
+                
+              })
+            })
+            ### end recurrence plot fft ugof
+            
+            
             results_rhythm[a,10] <<- m_ugof_beat_2} else {
               
               results_rhythm[a,10] <<- NA
@@ -507,7 +568,7 @@ server <- function(input, output) {
            output$plots <- renderUI({
              plot_output_list <- lapply(1:length(list_of_files), function(i) {
                plotname <- paste("plot", i, sep="")
-               plotlyOutput(plotname, height = 400, width = 400)
+               plotlyOutput(plotname, height = 250, width = 250)
              }) # end lapply
              
              do.call(tagList, plot_output_list)
@@ -556,6 +617,23 @@ server <- function(input, output) {
                  my_i <- a
                  plotname <- paste("plot", my_i, sep="")
                  
+                 # rec_plot <- ggplot(eucl_dist_2, aes(Var1, Var2)) +
+                 #   geom_tile(aes(fill = value)) +
+                 #   # geom_text(aes(label = round(value, 1))) +
+                 #   scale_fill_gradient(low = "white", high = "black")+
+                 #   xlab("#IOI")+
+                 #   ylab("#IOI")+
+                 #   coord_fixed(ratio=1)+
+                 #   ggtitle(paste("IOI, File: ", results_rhythm$filename[my_i]))+
+                 #   theme_minimal()+
+                 #   theme(
+                 #     plot.background = element_rect(fill = "white"),
+                 #     panel.grid = element_blank())
+                 # 
+                 # rec_plot <- ggplotly(rec_plot)
+                 # 
+                 # plot_list <<- list(plot_list, rec_plot)
+                 
                  output[[plotname]] <- renderPlotly({
                    
                   rec_plot <- ggplot(eucl_dist_2, aes(Var1, Var2)) +
@@ -570,7 +648,7 @@ server <- function(input, output) {
                   theme(
                     plot.background = element_rect(fill = "white"),
                     panel.grid = element_blank())
-                   
+
                    rec_plot <- ggplotly(rec_plot)
                    
                    rec_plot
@@ -628,7 +706,52 @@ server <- function(input, output) {
     })
     
   })
+
+#05: Rerun analysis on subsection chosen from the Recurrence plots------------
+# tags:  file_nr --> File Nr. to rerun analysis
+#         start --> start IOI, for analysis
+#         end   --> end IOI, for analysis
+#         rerun_ioi --> name of action button
+
+  
+  #observer({
+  observeEvent(input$rerun_ioi, {  
     
+   data_rerun <- list_of_files[input$file_nr]
+    
+   data_rerun_section <- data_rerun[input$start:input$end,1]
+
+   ## ioi beat
+   
+   ioi_rerun <- data.frame()                 # set up empty dataframe to store ioi values in
+   
+   #for (a in filenumber){             #start of loop for number of files, needs to be added, maybe better add in main! 
+   
+   for (x in  1:nrow(data_rerun_section)) {          # start of loop through rows of data to calculate iois
+     
+     z = x+1 
+     ioi_rerun[x,1] <- data_rerun_section[z,1]-data_rerun_section[x,1]
+     
+   }                                   #end of loop through rows of data to calculate iois
+   
+   colnames(ioi_rerun) <- c("X1")
+   
+   ioi_beat_rerun <- 1/mean(ioi_rerun$X1, na.rm = TRUE) # calculate mean of iois
+    
+      results_rerun[1,1] <<- ioi_beat_rerun
+      
+    ##rerun ugof
+      
+      
+      
+  }) #end observerEvent rerun IOI
+  
+  output$table_rerun <- renderTable({
+    
+    results_rerun
+    
+  })
+  
 ## 06: Download Results --------------
 
   ## Dataset Results
@@ -652,12 +775,14 @@ server <- function(input, output) {
   # https://stackoverflow.com/questions/66788578/shiny-export-multiple-figures-dynamically-created-through-renderui
 
   output$downloadPlot <- downloadHandler(
-    filename = function(){
-      paste("recurrence_plot",plotname,  input$savename,"_fs_",input$fs,".jpg", sep = "")
-    },
+    filename = "RecurrencePlots.png",
+    #filename = function(){
+    #  paste("recurrence_plot",input$savename,"_fs_",input$fs,".png", sep = "")
+    #},
     content = function(file){
-      png(file)
-      print(output$plot_ugof)
+      #params <- list(Plot_list = plot_list)
+      #png(plot_list)
+      png(plot_list, file)
       dev.off()
     }
   )
