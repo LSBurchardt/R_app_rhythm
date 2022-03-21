@@ -17,59 +17,11 @@
 ##########################################################################
 
 #global.R
-# 00: install packages
 
-if (!require(tidyverse)) {
-  install.packages("tidyverse")
-}
-if (!require(shiny)) {
-  install.packages("shiny")
-}
-if (!require(shinyFiles)) {
-  install.packages("shinyFiles")
-}
-if (!require(shinyWidgets)) {
-  install.packages("shinyWidgets")
-}
-if (!require(shinybusy)) {
-  install.packages("shinybusy")
-}
-if (!require(SynchWave)) {
-  install.packages("SynchWave")
-}
-if (!require(readxl)) {
-  install.packages("readxl")
-}
-if (!require(corrplot)) {
-  install.packages("corrplot")
-}
-if (!require(plotly)) {
-  install.packages("plotly")
-}
-if (!require(vegan)) {
-  install.packages("vegan")
-}
+# 00: load packages -- ---------------------------------------------------------
 if (!require(install.load)) {
   install.packages("install.load")
 }
-if(!require(openxlsx)) {
-  install.packages("openxlsx")
-}
-if(!require(shinyjs)) {
-  install.packages("shinyjs")
-}
-if(!require(DT)) {
-  install.packages("DT")
-}
-if(!require(pracma)) {
-  install.packages("pracma")
-}
-if(!require(svDialogs)) {
-  install.packages("svDialogs")
-}
-
-
-# 00: load packages -- ---------------------------------------------------------
 
 library(install.load)
 
