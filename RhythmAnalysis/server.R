@@ -398,7 +398,7 @@ server <- function(input, output) {
          output$rec_ugof_plots <- renderUI({
            plot_output_list <- lapply(1:length(list_of_files), function(i) {
              plotname <- paste("ugof_plot", i, sep="")
-             plotlyOutput(plotname, height = 250, width = 250)
+             plotlyOutput(plotname, height = 300, width = 300)
            }) # end lapply
            
            do.call(tagList, plot_output_list)
@@ -440,11 +440,12 @@ server <- function(input, output) {
            xlab("#ugof")+
            ylab("#ugof")+
            coord_fixed(ratio=1)+
-           ggtitle(paste("ugof ioi, File: ", results_rhythm$filename[my_i]))+
+           ggtitle(paste("ugof ioi,File:", results_rhythm$filename[my_i]))+
            theme_minimal()+
            theme(
              plot.background = element_rect(fill = "white"),
-             panel.grid = element_blank())
+             panel.grid = element_blank(),
+             title = element_text(size = 6))
          
          rec_plot_ugof<- ggplotly(rec_plot_ugof)
          
@@ -494,7 +495,7 @@ server <- function(input, output) {
             output$rec_ugof_fft_plots <- renderUI({
               plot_output_list <- lapply(1:length(list_of_files), function(i) {
                 plotname <- paste("ugof_fft_plot", i, sep="")
-                plotlyOutput(plotname, height = 250, width = 250)
+                plotlyOutput(plotname, height = 300, width = 300)
               }) # end lapply
               
               do.call(tagList, plot_output_list)
@@ -536,11 +537,12 @@ server <- function(input, output) {
                   xlab("#ugof")+
                   ylab("#ugof")+
                   coord_fixed(ratio=1)+
-                  ggtitle(paste("ugof fft, File: ", results_rhythm$filename[my_i]))+
+                  ggtitle(paste("ugof fft,File:", results_rhythm$filename[my_i]))+
                   theme_minimal()+
                   theme(
                     plot.background = element_rect(fill = "white"),
-                    panel.grid = element_blank())
+                    panel.grid = element_blank(),
+                    title = element_text(size = 6))
                 
                 rec_plot_ugof<- ggplotly(rec_plot_ugof)
                 
@@ -568,7 +570,7 @@ server <- function(input, output) {
            output$plots <- renderUI({
              plot_output_list <- lapply(1:length(list_of_files), function(i) {
                plotname <- paste("plot", i, sep="")
-               plotlyOutput(plotname, height = 250, width = 250)
+               plotlyOutput(plotname, height = 300, width = 300)
              }) # end lapply
              
              do.call(tagList, plot_output_list)
@@ -643,11 +645,12 @@ server <- function(input, output) {
                    xlab("#IOI")+
                    ylab("#IOI")+
                   coord_fixed(ratio=1)+
-                  ggtitle(paste("IOI, File: ", results_rhythm$filename[my_i]))+
+                  ggtitle(paste("IOI,File:", results_rhythm$filename[my_i]))+
                   theme_minimal()+
                   theme(
                     plot.background = element_rect(fill = "white"),
-                    panel.grid = element_blank())
+                    panel.grid = element_blank(),
+                    title = element_text(size = 6))
 
                    rec_plot <- ggplotly(rec_plot)
                    

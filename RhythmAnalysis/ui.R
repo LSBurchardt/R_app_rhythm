@@ -72,8 +72,6 @@ ui <- fluidPage(
              
              downloadButton("downloadData", "Download Results"),
              
-             img(src="blank_space.png", width = "100%"),
-            
              #downloadButton("downloadPlot", "Download Recurrence Plots"),
              
              #tags$iframe(style="height:4px; width:1%; scrolling=yes", 
