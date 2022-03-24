@@ -39,31 +39,23 @@ ui <- fluidPage(
              # Sidebar with input for analysis options and sampling rate for fourier analysis
              
              checkboxInput("all", "Run all analysis.", value = TRUE),
+             
              checkboxInput("rec_plot", "Produce Recurrence Plots", value = TRUE),
+             
              numericInput("fs", "Sampling Rate (FS) for Fourier Analysis",
                           min= 10, max= 1000, value=20),
-             img(src="blank_space.png", width = "100%"),
-             
+         
              selectInput("fileextension", "Choose file extension of input data:",
                          choices = c("csv", "xls", "xlsx")),
-             # selectInput("fileextension_output", "Choose file extension for output data:",
-             #             choices = c("csv", "xlsx")),
+
+             actionButton("goButton_1","Choose input folder"),
+             
+             img(src="blank_space.png", width = "100%"),
              
              textInput("savename", "ID for saving (i.e. test_species)", value = ""),
              
-             img(src="blank_space.png", width = "100%"),
-             
-             #actionButton("dir", "Choose Directory"),
-             actionButton("goButton_1","Choose folder"),
-            
-             #textOutput("session"),
-             #shinyDirButton("dir", label = "Chose directory", title = "Chose Directory", multiple = TRUE),
-            
-             img(src="blank_space.png", width = "100%"),
-             
              actionButton("goButton_2","GO"),
-             #submitButton("Run Analysis"),
-             
+
              img(src="blank_space.png", width = "100%"),
              
              actionButton("resetAll", "Reset FS"),
@@ -74,8 +66,8 @@ ui <- fluidPage(
              
              #downloadButton("downloadPlot", "Download Recurrence Plots"),
              
-             #tags$iframe(style="height:4px; width:1%; scrolling=yes", 
-            #           src="manual.pdf"),
+             tags$iframe(style="height:4px; width:1%; scrolling=yes", 
+                       src="manual.pdf"),
              offset = 1
              ),
       # Show plots of the data
