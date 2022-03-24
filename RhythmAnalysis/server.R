@@ -720,11 +720,20 @@ server <- function(input, output) {
   #observer({
   observeEvent(input$rerun_ioi, {  
     
-   data_rerun <- list_of_files[input$file_nr]
-    
+    if (input$fileextension == 'csv'){
+      data_rerun <- read_delim(paste(path, list_of_files[input$file_nr], sep = "\\"), delim  = ",", col_names = FALSE)
+      colnames(data_rerun) <- c("X1", "X2", "X3")
+    } else if (input$fileextension == "xls"){
+      data_rerun <- read_xls(paste(path, list_of_files[input$file_nr], sep = "\\"), sheet = 1, col_names = FALSE)
+      colnames(data_rerun) <- c("X1", "X2", "X3")
+    } else if (input$fileextension == "xlsx") {
+      data_rerun <- read.xlsx(paste(path, list_of_files[input$file_nr], sep = "\\"), sheet = 1, colNames = FALSE)
+      colnames(data_rerun) <- c("X1", "X2", "X3")
+    } else {NULL}
+   
    data_rerun_section <- data_rerun[input$start:input$end,1]
 
-   ## ioi beat
+   ## rerun ioi beat ----------
    
    ioi_rerun <- data.frame()                 # set up empty dataframe to store ioi values in
    
@@ -743,17 +752,69 @@ server <- function(input, output) {
     
       results_rerun[1,1] <<- ioi_beat_rerun
       
-    ##rerun ugof
+    ##rerun ugof ioi beat -------------
+      data_rerun_ugof <- data_rerun_section$X1
+      #data_ugof <- pull(data[,1])
+      beat_rerun_ioi <- results_rerun[1,1]
       
       
+      # calculate goodness-of-fit for IOI analysis and Fourier analysis
+      
+      maxoriginal <- max(data_rerun_ugof)
+      timesteps <- 1000/round(beat_rerun_ioi, digits = 1)
+      count <- 0
+      theotime_value <- 0
+      theotime_seq <- data.frame()
+      
+      while (theotime_value < maxoriginal){
+        
+        count <- count + 1;
+        theotime_value <- count * timesteps /1000;
+        theotime_seq[count,1] <- theotime_value;
+        
+      }
+      
+      # match original sequence to theoretical timeseries and calculate actual deviation
+      x <- length(data_rerun_ugof)
+      min_value <- c(1:x)
+      ugof_value_beat_rerun <- c()
+      
+      
+      for (n in 1:x){
+        
+        min_value[n] <- min(abs(data_rerun_ugof[n]- theotime_seq))
+        
+      }
+      
+      # calculate uGof
+      
+      maxdev <- timesteps/2/1000;
+      
+      ugof_value_beat_rerun <- min_value/maxdev;
+      
+      
+      m_ugof_beat_1_rerun <- median(ugof_value_beat_rerun[2:length(ugof_value_beat_rerun)])
+      
+      results_rerun[1,2] <<- m_ugof_beat_1_rerun
+      
+      results_rerun[1,3] <<- input$file_nr
+      
+      results_rerun[1,4] <<- input$start
+      
+      results_rerun[1,5] <<- input$end
+      
+      colnames(results_rerun) <- c("Rerun IOI Beat", "Rerun ugof", "file nr", "Rerun: start IOI","Rerun: end IOI" )
+      
+      
+      output$table_rerun <- renderTable({
+        
+        results_rerun
+        
+      })
       
   }) #end observerEvent rerun IOI
   
-  output$table_rerun <- renderTable({
-    
-    results_rerun
-    
-  })
+  
   
 ## 06: Download Results --------------
 
