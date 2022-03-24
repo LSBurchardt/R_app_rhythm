@@ -118,7 +118,11 @@ ui <- fluidPage(
                                                min= 1, max= 1000, value=50),
                                   actionButton("rerun_ioi", "Rerun on Section"),
                                   
-                                  tableOutput("table_rerun")
+                                  img(src="blank_space.png", width = "100%"),
+                                  
+                                  tableOutput("table_rerun"),
+                                  
+                                  downloadButton("download_rerun_Data", "Download Rerun Results")
                                  ),
                          tabPanel("Beat precision details",
                                   ##

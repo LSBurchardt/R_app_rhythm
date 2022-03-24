@@ -797,13 +797,13 @@ server <- function(input, output) {
       
       results_rerun[1,2] <<- m_ugof_beat_1_rerun
       
-      results_rerun[1,3] <<- input$file_nr
+      results_rerun[1,3] <<- list_of_files[input$file_nr]
       
       results_rerun[1,4] <<- input$start
       
       results_rerun[1,5] <<- input$end
       
-      colnames(results_rerun) <- c("Rerun IOI Beat", "Rerun ugof", "file nr", "Rerun: start IOI","Rerun: end IOI" )
+      colnames(results_rerun) <<- c("rerun_ioi_beat", "rerun_ugof", "file_nr", "rerun_start_ioi","rerun_end_ioi" )
       
       
       output$table_rerun <- renderTable({
@@ -832,6 +832,24 @@ server <- function(input, output) {
     },
     content = function(file){
       write.csv(datasetInput(), file, row.names = FALSE)
+    }
+  )
+  
+  ## Rerun Dataset Results
+  
+  datasetInput_rerun <- reactive({
+    
+    results_rerun
+    
+  })
+  
+  
+  output$download_rerun_Data <- downloadHandler(
+    filename = function(){
+      paste("rerun_rhythm_analysis_", input$savename,"filenr_", input$file_nr,".csv", sep = "")
+    },
+    content = function(file){
+      write.csv(datasetInput_rerun(), file, row.names = FALSE)
     }
   )
    
