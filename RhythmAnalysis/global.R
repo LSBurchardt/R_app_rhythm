@@ -27,15 +27,15 @@ library(install.load)
 
 install_load("shiny", "shinyFiles","shinybusy", "shinyjs", "shinyWidgets",
              "tidyverse","readxl","openxlsx","svDialogs",
-             "pracma","SynchWave","vegan" ,"corrplot", "plotly","DT")
+             "pracma","SynchWave","vegan" ,"corrplot", "plotly","DT", "scales")
 
 
-#svDialogs: for busy spinning wheel
-#pracma: for fourier.R, findpeaks
-#SynchWave: for fourier.R, fftshift
-#vegan: for recurrence.R, to calculate euclidean distance
-#corrplot: for recurrence.R, multiple plots
-#plotly: for recurrence.R, interactive recurrence plots
+#svDialogs: for dialouge boxes, not needed in app, but in raw code
+#pracma: for fourier, findpeaks
+#SynchWave: for fourier, fftshift
+#vegan: for recurrence plots, to calculate euclidean distance
+#corrplot: for recurrence plots, multiple plots
+#plotly: interactive recurrence plots
 
 
 # 01: load functions -- -------------------------------------------------------------
@@ -46,8 +46,8 @@ install_load("shiny", "shinyFiles","shinybusy", "shinyjs", "shinyWidgets",
 
 results_rhythm <<- data.frame()      # <<- global assignment operator, needs to be used when changing as well
 ioi_all <<- list(NA)
+results_rerun <<- data.frame()       # <<- global assignment operator, needs to be used when changing as well
 
-results_rerun <<- data.frame()
 # 03: define ui --------------------------------------------------------------
 
 #defined in ui.R

@@ -125,6 +125,12 @@ ui <- fluidPage(
                                   downloadButton("download_rerun_Data", "Download Rerun Results")
                                  ),
                          tabPanel("Beat precision details",
+                                  
+                                  textOutput("warning_ugof_detail"),
+                                
+                                  actionButton("ugof_detail", "Calculate now"),
+                                  
+                                  plotlyOutput("maxdev100")
                                   ##
                          ),
                          tabPanel("Help",

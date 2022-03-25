@@ -101,13 +101,13 @@ server <- function(input, output) {
          #be aware: if you have column names: set col_names = TRUE! if not: col_names = FALSE
 
         if (input$fileextension == 'csv'){
-          data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ",", col_names = FALSE)
+          data <<- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ",", col_names = FALSE)
           colnames(data) <- c("X1", "X2", "X3")
         } else if (input$fileextension == "xls"){
-          data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = FALSE)
+          data <<- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = FALSE)
           colnames(data) <- c("X1", "X2", "X3")
         } else if (input$fileextension == "xlsx") {
-          data <- read.xlsx(paste(path, list_of_files[a], sep = "\\"), sheet = 1, colNames = FALSE)
+          data <<- read.xlsx(paste(path, list_of_files[a], sep = "\\"), sheet = 1, colNames = FALSE)
           colnames(data) <- c("X1", "X2", "X3")
         } else {NULL}
 
@@ -815,8 +815,97 @@ server <- function(input, output) {
   }) #end observerEvent rerun IOI
   
   
+# 06: beat precision details -------------
+## 06.1: theoretical maximum deviations ---------
   
-## 06: Download Results --------------
+  output$warning_ugof_detail <- renderText({
+    
+    "Running this analysis is quite time intensive, as all ugofs are calculated between
+    0.1 and 100 Hz for all input files you chose. Are you sure you want to run this analysis?"
+    
+  })
+  
+  observeEvent(input$ugof_detail, {  
+  
+  maxdev <- vector()
+  count <- 0
+    
+for (x in seq(from = 0.1, to= 100, by = 0.1)){
+    
+      count <- count + 1
+    
+      timestep <- 1000/x
+    
+      maxdev[count] <- timestep/2
+    }
+
+  maxdev <- as.data.frame(maxdev)
+  
+  maxdev <- maxdev %>% 
+    mutate(beat = seq(0.1,100,0.1),
+           maxdev = maxdev/1000) #transform max dev from ms to seconds
+  
+  output$maxdev100 <- renderPlotly({
+    
+    p <- ggplot(data = maxdev, )+
+      geom_jitter(aes(x = beat, y = maxdev),
+                  width = 0.2, alpha = 0.5, shape = 1, size = 0.5)+
+      ylab("max deviation in sec")+
+      xlab("Beat [Hz]")+
+      theme_minimal()+
+      ggtitle("Maximum possible deviation from 1 to 100 Hz")+
+      coord_cartesian(ylim = c(0.001,10))+
+      scale_y_log10(labels = scales::label_comma(accuracy = 0.01))
+
+    p <- ggplotly(p)
+    
+    p
+    
+  })
+
+## 06.2: modelling ugofs ----------------
+# for various rhythms as calculated with 
+
+  
+# code from matlab for modelling ugofs
+#   for k= 1: length(listOfFileNames)
+#   matfilename = listOfFileNames{:,k};
+#   data = xlsread(matfilename); 
+#   data = data(:,1);
+#   % one sequence, 1000 rhythms
+#   a= 0;
+#   for rhythm = 0.1:0.01:100
+#   clear timesteps count theotime_value theotime_seq x minValue maxdev ugof_value
+#   a = a+1;
+#   maxoriginal = max(data);
+#   timesteps = 1000/rhythm;
+#   count = -1;
+#   theotime_value = 0;
+#   % theotime ioi rhythm
+#   while theotime_value < maxoriginal
+#   count = count + 1;
+#   theotime_value = count * timesteps /1000;
+#   theotime_seq(count+1) = theotime_value;
+#   end
+#   x = length(data);
+#   minValue = [];
+#   ugof_value = [];
+#   for n = 1:x
+#   minValue(n) = min(abs(data(n) - theotime_seq.'));
+# 
+# minValue_mean_ioi = mean(minValue(2:end));
+# end 
+# % calculate uGof ioi rhythm 
+# maxdev = timesteps/2/1000;
+# ugof_value = minValue./maxdev;
+# m_ugof(a,k) = median(ugof_value(2:end)); %calculate the mean of the sequence, maybe it should be median? 
+# end
+# end
+  
+  
+  
+  })
+# 07: Download Results --------------
 
   ## Dataset Results
   datasetInput <- reactive({
