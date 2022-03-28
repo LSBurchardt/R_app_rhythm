@@ -78,11 +78,24 @@ ui <- fluidPage(
              
              tabsetPanel(type = "tabs",
                          tabPanel("Data",
+                                  column(8,
                                   textOutput("files"),
                                   textOutput("files_out"),
                                   tableOutput("list_files"),
                                   #tableOutput("table_input_data"),
-                                  textOutput("loop_a"),
+                                  textOutput("loop_a")
+                                  ),
+                                  column(4,
+                                  #checkboxInput("element_all", "Use all elements.", value = TRUE),
+                                  checkboxInput("element_a", "Use element a.", value = TRUE),
+                                  checkboxInput("element_b", "Use element b.", value = TRUE),
+                                  checkboxInput("element_c", "Use element c.", value = TRUE),
+                                  checkboxInput("element_d", "Use element d.", value = TRUE),
+                                  checkboxInput("element_e", "Use element e.", value = TRUE),
+                                  checkboxInput("element_f", "Use element f.", value = TRUE),
+                                  textOutput("element"),
+                                  tableOutput("elementlist")
+                                  )
                                   #plotlyOutput("plot_timeseries", inline = TRUE)
                          ),
                          tabPanel("Results", 
@@ -130,7 +143,9 @@ ui <- fluidPage(
                                 
                                   actionButton("ugof_detail", "Calculate now"),
                                   
-                                  plotlyOutput("maxdev100")
+                                  plotlyOutput("maxdev100"),
+                                  
+                                  plotlyOutput("ugof_hist")
                                   ##
                          ),
                          tabPanel("Help",

@@ -101,13 +101,13 @@ server <- function(input, output) {
          #be aware: if you have column names: set col_names = TRUE! if not: col_names = FALSE
 
         if (input$fileextension == 'csv'){
-          data <<- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ",", col_names = FALSE)
+          data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ",", col_names = FALSE)
           colnames(data) <- c("X1", "X2", "X3")
         } else if (input$fileextension == "xls"){
-          data <<- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = FALSE)
+          data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = FALSE)
           colnames(data) <- c("X1", "X2", "X3")
         } else if (input$fileextension == "xlsx") {
-          data <<- read.xlsx(paste(path, list_of_files[a], sep = "\\"), sheet = 1, colNames = FALSE)
+          data <- read.xlsx(paste(path, list_of_files[a], sep = "\\"), sheet = 1, colNames = FALSE)
           colnames(data) <- c("X1", "X2", "X3")
         } else {NULL}
 
@@ -119,6 +119,56 @@ server <- function(input, output) {
          output$table_input_data <- renderTable({
                 data
          })
+         
+         
+       if("X3" %in% colnames(data) == TRUE) {
+
+           # include: if x3 is not NA...sonst: anzeigen: du hast keine elementtypen, es werden alle elemente analysiert
+           elementlist<- as.vector(NULL)
+
+           #if (input$element_all == TRUE)
+          #   elementlist <- c("a", "b", "c", "d", "e", "f") else {NULL}
+
+           if (input$element_a == TRUE)
+             elementlist <- c(elementlist, "a") else {NULL}
+
+           if (input$element_b == TRUE)
+             elementlist <- c(elementlist, "b") else {NULL}
+
+           if(input$element_c == TRUE)
+             elementlist <- c(elementlist, "c") else {NULL}
+
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "d") else {NULL}
+
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "e") else {NULL}
+
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "f") else {NULL}
+
+           data <- data %>%
+             filter(X3 %in% elementlist)
+           
+           output$elementlist <- renderTable({
+             
+            elementlist
+             
+           })
+
+           } else {
+
+             data <- data
+
+          output$element <- renderText({
+
+               print("You did not assign different element types. All elements will be used.")
+
+             })
+
+           }
+
+         
         ## ioi calc & plot ----------
          ioi <- data.frame()                 # set up empty dataframe to store ioi values in
          
@@ -866,6 +916,89 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
 ## 06.2: modelling ugofs ----------------
 # for various rhythms as calculated with 
 
+# there is an error thrown for certain rhythms that are too slow for the max orginal
+# needs to check first if theotime_value is bigger than maxoriginal
+# why wasn't that a problem in Matlab?
+  
+  for (k in 1:length(list_of_files)){
+    
+    if (input$fileextension == 'csv'){
+      data_ugof <- read_delim(paste(path, list_of_files[k], sep = "\\"), delim  = ",", col_names = FALSE)
+      colnames(data_ugof) <- c("X1", "X2", "X3")
+    } else if (input$fileextension == "xls"){
+      data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
+      colnames(data_ugof) <- c("X1", "X2", "X3")
+    } else if (input$fileextension == "xlsx") {
+      data_ugof <- read.xlsx(paste(path, list_of_files[k], sep = "\\"), sheet = 1, colNames = FALSE)
+      colnames(data_ugof) <- c("X1", "X2", "X3")
+    } else {NULL} 
+    
+    
+    data_ugof <- data_ugof[,1]
+    
+    a <- 0
+    
+    for (rhythm in seq(from = 0.1, to = 100, by = 0.01)){
+      #rm(timesteps, count, theotime_value, theotime_seq, x, minValue, maxdev, ugof_value)
+      a <- a +1
+      maxoriginal <- max(data_ugof)
+      timesteps <- 1000/rhythm
+      count <- 0
+      theotime_value <- 0
+      theotime_seq <- data.frame()
+      
+      while (theotime_value < maxoriginal){
+        
+        count <- count + 1
+        theotime_value <- count * timesteps/1000
+        theotime_seq[count,1] <- theotime_value  # here is the problem, theotime_seq is 
+        # only of length 1 for certain rhythms and certain max values of data
+        # in min_value[n] <- min(abs(data_ugof[n]- theotime_seq)) this leads to a 
+        # problem, because data_ugof[n] is not the same size as theotime_seq
+        # probably easiest to implement the if condition in the for loop below
+        # check what happened here in Matlab and why it did work there 
+        #
+        # is there an implementation issue to begin with? what was calculated here? what was subtracted
+        # from what here? go back to Matlab and check there
+        ##### HIER WEITER---------
+      }
+        # x <- length(data_ugof)
+        # min_value <- c(1:x)
+        # ugof_value_beat <- c()
+        # 
+        # 
+        # for (n in 1:x){
+        #   
+        #   min_value[n] <- min(abs(data_ugof[n]- theotime_seq))
+        #   
+        # }
+        # 
+        # # calculate uGof
+        # 
+        # maxdev <- timesteps/2/1000
+        # 
+        # ugof_value_beat <- min_value/maxdev
+        # 
+        # 
+        # m_ugof[a,k] <- median(ugof_value_beat[1:length(ugof_value_beat)])  
+      }
+      }
+    
+  # output$ugof_hist <- renderPlotly({
+  #   
+  #   p <- gather(m_ugof, cols, value) %>% 
+  #     ggplot(aes(x= value))+
+  #     geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change binwidth here
+  #     aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
+  #     xlab("ugof")+                            
+  #     ylab("Percentage [%]")+
+  #     theme_minimal()
+  #   
+  #   ggplotly(p)
+  #   
+  #   p
+  #   
+  # })
   
 # code from matlab for modelling ugofs
 #   for k= 1: length(listOfFileNames)
