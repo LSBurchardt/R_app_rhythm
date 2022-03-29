@@ -35,31 +35,26 @@
 #defined in ui.R
 
 # 04: Server function ---------------------------------------------------------
-# Define server logic required to draw mapPlot and other plots for mainpanel
+# Define server logic required to run calculations, draw plots etc.
 server <- function(input, output) {
   
   
-  # 04a: author  ------------------------------------------    
+# author  ------------------------------------------ 
+  
   output$authors <- renderText({
     paste("written by Dr. Lara S. Burchardt")
   })
   
-  # 04b: choosing data to analyse  ------------------------------------------
+# 04a: choosing data to analyse  -------------------
   
-  # Filextension
+# File extension, Textoutput which file extension was chosen
   pattern <- reactive({input$fileextension})
   
   output$files <- renderText({
     paste("You chose the following file extension pattern of the input data", pattern(), ".")
   })
   
-  # pattern_out <- reactive({input$fileextension_output})
-  # 
-  # output$files_out <- renderText({
-  #   paste("You chose the following file extension pattern for the output data", pattern_out(), ".")
-  # })
-  
-  # Directory and Files
+# Directory and Files, 
   observe({
     if(input$goButton_1 > 0){
       
@@ -76,13 +71,13 @@ server <- function(input, output) {
         list$index <- row.names(list)
         colnames(list) <- c("file", "index")
         list
-        })
-    }
-    
-  })
+        }) # end renderTable
+      
+      } # end if input$go Button
+  })# end observe go button
   
-  # 04c: Calculations ---------------
-  results <- observe({
+# 04b: Standard Calculations ---------------
+results <- observe({
     
     if(input$goButton_2 > 0){
   
@@ -94,11 +89,11 @@ server <- function(input, output) {
       ioi_all <<- list(NA)
       plot_list <<- list(NA)
     
-     for (a in 1:length(list_of_files)) {
+for (a in 1:length(list_of_files)) {
          
-      ## load data ----------
+  ## load data ----------
          
-         #be aware: if you have column names: set col_names = TRUE! if not: col_names = FALSE
+  #be aware: independent of your column names, they are overwritten to be X1, X2, and X3
 
         if (input$fileextension == 'csv'){
           data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ",", col_names = FALSE)
@@ -113,21 +108,20 @@ server <- function(input, output) {
 
         
 
-         output$loop_a <- renderText({
-           paste("We finished loop", a , "of", length(list_of_files))})
+    output$loop_a <- renderText({
+         paste("We finished loop", a , "of", length(list_of_files))})
         
          output$table_input_data <- renderTable({
                 data
-         })
-         
-         
-       if("X3" %in% colnames(data) == TRUE) {
+         }) #end renderText
 
-           # include: if x3 is not NA...sonst: anzeigen: du hast keine elementtypen, es werden alle elemente analysiert
+### subset for element types -----------         
+# did you load data with element types in column X3? if-clause to check for third column
+# if not, message is shown that all elements are used, because not subsetable for elementtype        
+      
+          if("X3" %in% colnames(data) == TRUE) {
+
            elementlist<- as.vector(NULL)
-
-           #if (input$element_all == TRUE)
-          #   elementlist <- c("a", "b", "c", "d", "e", "f") else {NULL}
 
            if (input$element_a == TRUE)
              elementlist <- c(elementlist, "a") else {NULL}
@@ -146,16 +140,20 @@ server <- function(input, output) {
 
            if(input$element_d == TRUE)
              elementlist <- c(elementlist, "f") else {NULL}
-
+           
+# filter data for the chosen element types
+           
            data <- data %>%
              filter(X3 %in% elementlist)
+# output elementlist to see, which elements where chosen, just a back up to see, if elementlist
+# works correctly
            
            output$elementlist <- renderTable({
              
             elementlist
              
            })
-
+# else to "X3" %in% colnames(data) == TRUE)
            } else {
 
              data <- data
@@ -166,10 +164,10 @@ server <- function(input, output) {
 
              })
 
-           }
+           } #end of else
 
          
-        ## ioi calc & plot ----------
+## ioi calc & plot ----------
          ioi <- data.frame()                 # set up empty dataframe to store ioi values in
          
          #for (a in filenumber){             #start of loop for number of files, needs to be added, maybe better add in main! 
@@ -196,7 +194,8 @@ server <- function(input, output) {
          ioi_all[[a]] <<- ioi
         
          #ioi_seq <<- ioi
-         ### plot Beats ------------
+         
+### plot Beats ------------
          output$plot_beat <- renderPlotly({
            
            p <- ggplot(data = results_rhythm, )+
@@ -217,7 +216,7 @@ server <- function(input, output) {
          })
          
          
-         ### plot ugof ----------------
+### plot ugof ----------------
          output$plot_ugof <- renderPlotly({
            
            p <- ggplot(data = results_rhythm)+
@@ -241,7 +240,7 @@ server <- function(input, output) {
            p
            
          })
-         ### plot Variability Parameter ----------
+### plot Variability Parameter ----------
          output$plot_var <- renderPlotly({
            
            p <- ggplot(data = results_rhythm)+
@@ -260,7 +259,7 @@ server <- function(input, output) {
            
          })
          
-         ### ioi hist --------------------
+### ioi hist --------------------
          output$plot_ioi_all <- renderPlotly({
            
            ioi_all <<- as.data.frame(unlist(ioi_all))
@@ -277,10 +276,7 @@ server <- function(input, output) {
            p
          })
          
-        
-        
-        
-        ## npvi calculations (ioi_seq) -----------
+## npvi calculations (ioi_seq) -----------
          
          ioi_seq <- drop_na(ioi)
          z <- c()
@@ -303,17 +299,14 @@ server <- function(input, output) {
          
         ## end npvi 
         
-        ## fourier -----------
+## fourier calculations -----------
         
-         ### binary -----------
+### binary -----------
          
-         # transform time labels to binary sequence for Fourier analysis
-         
+#transform time labels to binary sequence for Fourier analysis
          
          event_timepoint <- vector(length = nrow(data))
          event_timepoint <- data [,1]
-         
-         
          
          event_timepoint_fs <- round(event_timepoint*input$fs) # index of events with fs chosen in interface
          
@@ -321,7 +314,6 @@ server <- function(input, output) {
          
          binarydata <<- data.frame(matrix(ncol = 1, nrow = max(event_timepoint_fs), 0))
          colnames(binarydata) <<- c('timeseries')
-         
          
          for (l in 1: max(event_timepoint_fs)){
            #print(l)
@@ -338,23 +330,21 @@ server <- function(input, output) {
          }           #end of for loop l
          
          ### end binary
-        
-         ### fourier calc ----------
          
-         #https://statisticsglobe.com/find-index-positions-non-zero-values-matrix-r
+### fourier calc ----------
+         
+#https://statisticsglobe.com/find-index-positions-non-zero-values-matrix-r
          
          k <- which(binarydata != 0, arr.ind = T)   # find outputs all values unequal zero -> finds all 1's, saves indices in k
          X <- binarydata$timeseries[min(k[,1]):max(k[,1])]             # X in binary data cut to start and end with 1
          L <- length(X)                              # length of actual signal 
          kk <- nrow(k)                             #number of elements in sequence! save!
          
-         
-         fs <- 200; # should be soft coded to match sampling rate calculated with in "binary"
+         fs <- input$fs # should be soft coded to match sampling rate calculated with in "binary"
          X <- 1/L * SynchWave::fftshift(fft(X,L))
          df <- fs/L #frequency resolution
          sample_index <- (-L/2):(L/2-1) #ordered index for FFT plot
          f <- sample_index*df
-         
          
          index_0 <- which.min(abs(f-0))      #index where f is zero to select only positive fs 
          X <- X[(index_0 - 1): length(X) ]   # select only amplitudes for positive fs
@@ -374,7 +364,7 @@ server <- function(input, output) {
          colnames(peaks) <- c("amplitude", "index") 
          
          # we know amplitude and index but not yet the corresponding frequency
-         # we now need to couple index with corresponding frquency from f
+         # we now need to couple index with corresponding frequency from f
          
          # f at indexes in peaks$index
          peak_freq <- f[peaks$index]
@@ -391,7 +381,7 @@ server <- function(input, output) {
          
          #save data
          
-         results_rhythm[a,5] <<- peaks$freq[2] #change row index to soft coding once loops are in place [i,3]
+         results_rhythm[a,5] <<- peaks$freq[2] # fourier beat
          results_rhythm[a,6] <<- df            # frequency resolution
          results_rhythm[a,7] <<- kk            # number of elements 
          results_rhythm[a,8] <<- L             # length of signal
@@ -399,10 +389,12 @@ server <- function(input, output) {
          ### end fourier calc
         ## end fourier
          
-        ## ugof ------------- 
-        
+## ugof ------------- 
+
+### ugof ioi ---------
+         
          data_ugof <- data$X1
-         #data_ugof <- pull(data[,1])
+         #data_ugof <- pull(data[,1]) #pull doesn't work with all input data, i.e. when loaded from xlsx
          beat_ioi <- results_rhythm[a,2]
          beat_fft <- results_rhythm[a,5]
 
@@ -427,7 +419,6 @@ server <- function(input, output) {
          min_value <- c(1:x)
          ugof_value_beat <- c()
          
-         
          for (n in 1:x){
            
            min_value[n] <- min(abs(data_ugof[n]- theotime_seq))
@@ -440,11 +431,10 @@ server <- function(input, output) {
          
          ugof_value_beat <- min_value/maxdev;
          
-         
          m_ugof_beat_1 <- median(ugof_value_beat[2:length(ugof_value_beat)])
          
+###recurrence ugof ioi -------------
          
-         ###recurrence ugof ioi -------------
          output$rec_ugof_plots <- renderUI({
            plot_output_list <- lapply(1:length(list_of_files), function(i) {
              plotname <- paste("ugof_plot", i, sep="")
@@ -463,8 +453,8 @@ server <- function(input, output) {
          
          eucl_dist_ugof[eucl_dist_ugof < threshold] <- 0
          
-         # transform matrix as to be able to plot it with ggplot as tile plot
-         #https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2
+# transform matrix as to be able to plot it with ggplot as tile plot
+ #https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2
          
          levels <- 1:(nrow(eucl_dist_ugof))
          
@@ -479,7 +469,6 @@ server <- function(input, output) {
          
          my_i <- a
          plotname <- paste("ugof_plot", my_i, sep="")
-         
          
          output[[plotname]] <- renderPlotly({
           
@@ -501,12 +490,13 @@ server <- function(input, output) {
          
          rec_plot_ugof
          
-         })
-         })
-         ### end recurrence ugof
+         }) #end renderPlotly
+      }) #end local
+         
+  ### end recurrence ugof
          results_rhythm[a,9] <<- m_ugof_beat_1 
          
-         ## ugof Fourier
+  ### ugof Fourier --------------
          
          if(is.na(beat_fft) == FALSE){  
          
@@ -522,18 +512,17 @@ server <- function(input, output) {
               theotime_seq_2[count_2,1] <- theotime_value_2;
             }
 
-            # match original sequence to theoretical timeseries and calculate actual deviation
+# match original sequence to theoretical timeseries and calculate actual deviation
            
             x_2 <- length(data_ugof)
             min_value_2 <- c(1:x)
             ugof_value_beat_2 <- c()
            
-           
             for (n in 1:x){
               min_value_2[n] <- min(abs(data_ugof[n]- theotime_seq_2))
             }
            
-            # calculate uGof
+# calculate ugof for Fourier beat
            
             maxdev_2 <- timesteps_2/2/1000;
            
@@ -541,7 +530,8 @@ server <- function(input, output) {
            
             m_ugof_beat_2 <- median(ugof_value_beat_2[2:length(ugof_value_beat_2)])
            
-            ### recurrence ugof fft -------------
+### recurrence ugof fft -------------
+            
             output$rec_ugof_fft_plots <- renderUI({
               plot_output_list <- lapply(1:length(list_of_files), function(i) {
                 plotname <- paste("ugof_fft_plot", i, sep="")
@@ -577,7 +567,6 @@ server <- function(input, output) {
               my_i <- a
               plotname <- paste("ugof_fft_plot", my_i, sep="")
               
-              
               output[[plotname]] <- renderPlotly({
                 
                 rec_plot_ugof <- ggplot(eucl_dist_ugof_2, aes(Var1, Var2)) +
@@ -598,9 +587,9 @@ server <- function(input, output) {
                 
                 rec_plot_ugof
                 
-              })
-            })
-            ### end recurrence plot fft ugof
+              }) # end renderPlotly
+            }) # end local 
+          ### end recurrence plot fft ugof
             
             
             results_rhythm[a,10] <<- m_ugof_beat_2} else {
@@ -611,12 +600,12 @@ server <- function(input, output) {
          
         ## end ugof
         
-        ## recurrence plot -------
+## recurrence plot -------
         
          if (input$rec_plot == TRUE){
            
-           ## loop version for recurrence plots
-           #https://stackoverflow.com/questions/22840892/r-shiny-loop-to-display-multiple-plots
+## loop version for recurrence plots
+#https://stackoverflow.com/questions/22840892/r-shiny-loop-to-display-multiple-plots
            output$plots <- renderUI({
              plot_output_list <- lapply(1:length(list_of_files), function(i) {
                plotname <- paste("plot", i, sep="")
@@ -668,24 +657,7 @@ server <- function(input, output) {
            
                  my_i <- a
                  plotname <- paste("plot", my_i, sep="")
-                 
-                 # rec_plot <- ggplot(eucl_dist_2, aes(Var1, Var2)) +
-                 #   geom_tile(aes(fill = value)) +
-                 #   # geom_text(aes(label = round(value, 1))) +
-                 #   scale_fill_gradient(low = "white", high = "black")+
-                 #   xlab("#IOI")+
-                 #   ylab("#IOI")+
-                 #   coord_fixed(ratio=1)+
-                 #   ggtitle(paste("IOI, File: ", results_rhythm$filename[my_i]))+
-                 #   theme_minimal()+
-                 #   theme(
-                 #     plot.background = element_rect(fill = "white"),
-                 #     panel.grid = element_blank())
-                 # 
-                 # rec_plot <- ggplotly(rec_plot)
-                 # 
-                 # plot_list <<- list(plot_list, rec_plot)
-                 
+
                  output[[plotname]] <- renderPlotly({
                    
                   rec_plot <- ggplot(eucl_dist_2, aes(Var1, Var2)) +
@@ -706,7 +678,7 @@ server <- function(input, output) {
                    
                    rec_plot
                    
-                 }) # end renderPlot
+                 }) # end renderPlotly
                }) # end local
            
          } else {NULL}       ## end if recurrence plot 
@@ -716,7 +688,7 @@ server <- function(input, output) {
      
       } #end of input$all == TRUE
       
-        ## results details ------
+# 04c: Standard results details ----------
       
       filenames <- as.data.frame(list_of_files)
       fs <- input$fs
@@ -742,7 +714,7 @@ server <- function(input, output) {
   output$calc <- renderText({
     paste("Once the results are done, they will appeare here. The results are:")})
   
-## 05: Reset Button
+#04d: Reset Button -------------
   
   observeEvent(input$resetAll, {
     reset("fs")
@@ -756,18 +728,18 @@ server <- function(input, output) {
       
       results_rhythm
       
-    })
+    }) #end renderTable
     
-  })
+  }) #end observeEvent reset
 
-#05: Rerun analysis on subsection chosen from the Recurrence plots------------
+#04e: Rerun analysis on subsection chosen from the Recurrence plots------------
+# The rerun is only calculating ioi beat and ugof, should it calculate the others, too?
 # tags:  file_nr --> File Nr. to rerun analysis
 #         start --> start IOI, for analysis
 #         end   --> end IOI, for analysis
 #         rerun_ioi --> name of action button
 
-  
-  #observer({
+# observeEvent could be used for the goButtons, too?
   observeEvent(input$rerun_ioi, {  
     
     if (input$fileextension == 'csv'){
@@ -787,8 +759,6 @@ server <- function(input, output) {
    
    ioi_rerun <- data.frame()                 # set up empty dataframe to store ioi values in
    
-   #for (a in filenumber){             #start of loop for number of files, needs to be added, maybe better add in main! 
-   
    for (x in  1:nrow(data_rerun_section)) {          # start of loop through rows of data to calculate iois
      
      z = x+1 
@@ -802,13 +772,12 @@ server <- function(input, output) {
     
       results_rerun[1,1] <<- ioi_beat_rerun
       
-    ##rerun ugof ioi beat -------------
+##rerun ugof ioi beat -------------
       data_rerun_ugof <- data_rerun_section$X1
-      #data_ugof <- pull(data[,1])
+
       beat_rerun_ioi <- results_rerun[1,1]
       
-      
-      # calculate goodness-of-fit for IOI analysis and Fourier analysis
+      # calculate goodness-of-fit for IOI analysis 
       
       maxoriginal <- max(data_rerun_ugof)
       timesteps <- 1000/round(beat_rerun_ioi, digits = 1)
@@ -829,19 +798,17 @@ server <- function(input, output) {
       min_value <- c(1:x)
       ugof_value_beat_rerun <- c()
       
-      
       for (n in 1:x){
         
         min_value[n] <- min(abs(data_rerun_ugof[n]- theotime_seq))
         
       }
       
-      # calculate uGof
+      # calculate uGof ioi beat rerun
       
       maxdev <- timesteps/2/1000;
       
       ugof_value_beat_rerun <- min_value/maxdev;
-      
       
       m_ugof_beat_1_rerun <- median(ugof_value_beat_rerun[2:length(ugof_value_beat_rerun)])
       
@@ -853,8 +820,9 @@ server <- function(input, output) {
       
       results_rerun[1,5] <<- input$end
       
-      colnames(results_rerun) <<- c("rerun_ioi_beat", "rerun_ugof", "file_nr", "rerun_start_ioi","rerun_end_ioi" )
+      results_rerun[1,6] <<- input$end - input$start + 1
       
+      colnames(results_rerun) <<- c("rerun_ioi_beat", "rerun_ugof", "file_nr", "rerun_start_ioi","rerun_end_ioi", "number of elements" )
       
       output$table_rerun <- renderTable({
         
@@ -864,9 +832,8 @@ server <- function(input, output) {
       
   }) #end observerEvent rerun IOI
   
-  
-# 06: beat precision details -------------
-## 06.1: theoretical maximum deviations ---------
+# 04f: beat precision details -------------
+## theoretical maximum deviations ---------
   
   output$warning_ugof_detail <- renderText({
     
@@ -913,7 +880,7 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
     
   })
 
-## 06.2: modelling ugofs ----------------
+## modelling ugofs ----------------
 # for various rhythms as calculated with 
 
 # there is an error thrown for certain rhythms that are too slow for the max orginal
@@ -932,7 +899,6 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
       data_ugof <- read.xlsx(paste(path, list_of_files[k], sep = "\\"), sheet = 1, colNames = FALSE)
       colnames(data_ugof) <- c("X1", "X2", "X3")
     } else {NULL} 
-    
     
     data_ugof <- data_ugof[,1]
     
@@ -1034,19 +1000,16 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
 # m_ugof(a,k) = median(ugof_value(2:end)); %calculate the mean of the sequence, maybe it should be median? 
 # end
 # end
-  
-  
-  
-  })
-# 07: Download Results --------------
 
-  ## Dataset Results
+  })
+# 04g: Download Results --------------
+
+  ## Dataset Results----------
   datasetInput <- reactive({
     
     results_rhythm
     
   })
-  
   
   output$downloadData <- downloadHandler(
     filename = function(){
@@ -1065,7 +1028,6 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
     
   })
   
-  
   output$download_rerun_Data <- downloadHandler(
     filename = function(){
       paste("rerun_rhythm_analysis_", input$savename,"filenr_", input$file_nr,".csv", sep = "")
@@ -1075,20 +1037,21 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
     }
   )
    
-  ## Recurrence Plots  
-  # https://stackoverflow.com/questions/66788578/shiny-export-multiple-figures-dynamically-created-through-renderui
-
-  output$downloadPlot <- downloadHandler(
-    filename = "RecurrencePlots.png",
-    #filename = function(){
-    #  paste("recurrence_plot",input$savename,"_fs_",input$fs,".png", sep = "")
-    #},
-    content = function(file){
-      #params <- list(Plot_list = plot_list)
-      #png(plot_list)
-      png(plot_list, file)
-      dev.off()
-    }
-  )
+## Recurrence Plots  
+# https://stackoverflow.com/questions/66788578/shiny-export-multiple-figures-dynamically-created-through-renderui
+# not working
+  
+  # output$downloadPlot <- downloadHandler(
+  #   filename = "RecurrencePlots.png",
+  #   #filename = function(){
+  #   #  paste("recurrence_plot",input$savename,"_fs_",input$fs,".png", sep = "")
+  #   #},
+  #   content = function(file){
+  #     #params <- list(Plot_list = plot_list)
+  #     #png(plot_list)
+  #     png(plot_list, file)
+  #     dev.off()
+  #   }
+  # )
   
 } #end server function
