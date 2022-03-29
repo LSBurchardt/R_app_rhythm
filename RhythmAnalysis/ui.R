@@ -43,7 +43,7 @@ ui <- fluidPage(
              checkboxInput("rec_plot", "Produce Recurrence Plots", value = TRUE),
              
              numericInput("fs", "Sampling Rate (FS) for Fourier Analysis",
-                          min= 10, max= 1000, value=20),
+                          min= 10, max= 1000, value=200),
          
              selectInput("fileextension", "Choose file extension of input data:",
                          choices = c("csv", "xls", "xlsx")),
@@ -58,7 +58,7 @@ ui <- fluidPage(
 
              img(src="blank_space.png", width = "100%"),
              
-             actionButton("resetAll", "Reset FS"),
+             actionButton("resetAll", "Reset Results Table"),
              
              img(src="blank_space.png", width = "100%"),
              
