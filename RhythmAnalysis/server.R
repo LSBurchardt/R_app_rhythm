@@ -691,10 +691,23 @@ for (a in 1:length(list_of_files)) {
 # 04c: Standard results details ----------
       
       filenames <- as.data.frame(list_of_files)
+      
+      if("X3" %in% colnames(data) == FALSE) {
+        
+      elements <- "all"
+        
+      } else if ("X3" %in% colnames(data) == TRUE & length(elementlist) == 6){
+        
+        elements <- "all"} else {
+      
+      elements <- str_c(elementlist, collapse = " ")
+      
+      }
+      
       fs <- input$fs
       savename <- input$savename
-      results_rhythm <<- cbind(results_rhythm, fs, filenames, savename)
-      colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso", "n_elements","signal_length","ugof_ioi","ugof_fft", "fs", "filename", "savename")
+      results_rhythm <<- cbind(results_rhythm, fs,elements, filenames, savename)
+      colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso", "n_elements","signal_length","ugof_ioi","ugof_fft", "fs","elements", "filename", "savename")
       
 
       
