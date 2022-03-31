@@ -143,8 +143,14 @@ for (a in 1:length(list_of_files)) {
            
 # filter data for the chosen element types
            
+           elements_seq[a] <<- str_c(data$X3, collapse = "") #needs to be run before(!) filtering the data
+           #otherwise the saved sequence will be the sequence that was actually analysed, would we want that?
+           # maybe include both?
+           
            data <- data %>%
              filter(X3 %in% elementlist)
+           
+           
 # output elementlist to see, which elements where chosen, just a back up to see, if elementlist
 # works correctly
            
@@ -181,8 +187,9 @@ for (a in 1:length(list_of_files)) {
          
          colnames(ioi) <- c("X1")
          
-         ioi_beat <- 1/mean(ioi$X1, na.rm = TRUE) # calculate mean of iois
-         
+         #ioi_beat <- 1/mean(ioi$X1, na.rm = TRUE) # calculate mean of iois
+         #ioi_beat <- 1/median(ioi$X1, na.rm = TRUE) #
+         ioi_beat <- 1/get(input$method)(ioi$X1, na.rm = TRUE) #the user chooses whether to calculate ioi beat based on median or mean
          ioi_cv <- sd(ioi$X1, na.rm = TRUE)/mean(ioi$X1, na.rm = TRUE)
          ioi_cv_unbiased <-  (1+1/(4*(nrow(ioi)-1)))*ioi_cv
          
@@ -393,6 +400,8 @@ for (a in 1:length(list_of_files)) {
 
 ### ugof ioi ---------
          
+         rm(maxoriginal, timesteps, theotime_value, theotime_seq)
+         
          data_ugof <- data$X1
          #data_ugof <- pull(data[,1]) #pull doesn't work with all input data, i.e. when loaded from xlsx
          beat_ioi <- results_rhythm[a,2]
@@ -402,6 +411,7 @@ for (a in 1:length(list_of_files)) {
          
          maxoriginal <- max(data_ugof)
          timesteps <- 1000/round(beat_ioi, digits = 1)
+         #timesteps <- 1000/30
          count <- 0
          theotime_value <- 0
          theotime_seq <- data.frame()
@@ -495,6 +505,9 @@ for (a in 1:length(list_of_files)) {
          
   ### end recurrence ugof
          results_rhythm[a,9] <<- m_ugof_beat_1 
+         #problem with [a,10] is not showing what I would expect it to show
+         silent_beat_ioi <- nrow(theotime_seq)-kk
+         results_rhythm[a,10] <<- silent_beat_ioi
          
   ### ugof Fourier --------------
          
@@ -592,9 +605,14 @@ for (a in 1:length(list_of_files)) {
           ### end recurrence plot fft ugof
             
             
-            results_rhythm[a,10] <<- m_ugof_beat_2} else {
+            results_rhythm[a,11] <<- m_ugof_beat_2
+            
+            silent_beat_fft <- nrow(theotime_seq_2)-kk
+           
+            results_rhythm[a,12] <<- silent_beat_fft} else {
               
-              results_rhythm[a,10] <<- NA
+              results_rhythm[a,11] <<- NA
+              results_rhythm[a,12] <<- NA
               
             }
          
@@ -695,19 +713,22 @@ for (a in 1:length(list_of_files)) {
       if("X3" %in% colnames(data) == FALSE) {
         
       elements <- "all"
+      elements_raw <- NA
         
       } else if ("X3" %in% colnames(data) == TRUE & length(elementlist) == 6){
         
-        elements <- "all"} else {
+        elements <- "all"
+        elements_raw <- elements_seq} else {
       
       elements <- str_c(elementlist, collapse = " ")
+      elements_raw <- elements_seq
       
       }
       
       fs <- input$fs
       savename <- input$savename
-      results_rhythm <<- cbind(results_rhythm, fs,elements, filenames, savename)
-      colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso", "n_elements","signal_length","ugof_ioi","ugof_fft", "fs","elements", "filename", "savename")
+      results_rhythm <<- cbind(results_rhythm, fs,elements,elements_raw, filenames, savename)
+      colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso", "n_elements","signal_length","ugof_ioi","silent_beats_ioi","ugof_fft","silent_beats_fft", "fs","elements","raw_element_seq", "filename", "savename")
       
 
       

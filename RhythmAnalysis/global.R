@@ -47,6 +47,7 @@ install_load("shiny", "shinyFiles","shinybusy", "shinyjs", "shinyWidgets",
 results_rhythm <<- data.frame()      # <<- global assignment operator, needs to be used when changing as well
 ioi_all <<- list(NA)
 results_rerun <<- data.frame()       # <<- global assignment operator, needs to be used when changing as well
+elements_seq <<- c()
 
 # 03: define ui --------------------------------------------------------------
 
