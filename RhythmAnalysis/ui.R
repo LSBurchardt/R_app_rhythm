@@ -44,6 +44,9 @@ ui <- fluidPage(
              
              numericInput("fs", "Sampling Rate (FS) for Fourier Analysis",
                           min= 10, max= 1000, value=200),
+             
+             selectInput("method", "Which method to use for ioi beat:",
+                         choices = c("mean", "median")),
          
              selectInput("fileextension", "Choose file extension of input data:",
                          choices = c("csv", "xls", "xlsx")),
@@ -66,8 +69,8 @@ ui <- fluidPage(
              
              #downloadButton("downloadPlot", "Download Recurrence Plots"),
              
-             tags$iframe(style="height:4px; width:1%; scrolling=yes", 
-                       src="manual.pdf"),
+             #tags$iframe(style="height:4px; width:1%; scrolling=yes", 
+            #           src="manual.pdf"),
              offset = 1
              ),
       # Show plots of the data

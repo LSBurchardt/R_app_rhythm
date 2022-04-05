@@ -193,7 +193,6 @@ for (a in 1:length(list_of_files)) {
          ioi_cv <- sd(ioi$X1, na.rm = TRUE)/mean(ioi$X1, na.rm = TRUE)
          ioi_cv_unbiased <-  (1+1/(4*(nrow(ioi)-1)))*ioi_cv
          
-         
          #add parameters to results
          results_rhythm[a,1] <<- a
          results_rhythm[a,2] <<- ioi_beat 
@@ -878,7 +877,7 @@ for (a in 1:length(list_of_files)) {
   
   observeEvent(input$ugof_detail, {  
   
-  maxdev <- vector()
+  maxdev_plot <- vector()
   count <- 0
     
 for (x in seq(from = 0.1, to= 100, by = 0.1)){
@@ -887,18 +886,18 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
     
       timestep <- 1000/x
     
-      maxdev[count] <- timestep/2
+      maxdev_plot[count] <- timestep/2
     }
 
-  maxdev <- as.data.frame(maxdev)
+  maxdev_plot <- as.data.frame(maxdev_plot)
   
-  maxdev <- maxdev %>% 
+  maxdev_plot <- maxdev_plot %>% 
     mutate(beat = seq(0.1,100,0.1),
-           maxdev = maxdev/1000) #transform max dev from ms to seconds
+           maxdev = maxdev_plot/1000) #transform max dev from ms to seconds
   
   output$maxdev100 <- renderPlotly({
     
-    p <- ggplot(data = maxdev, )+
+    p <- ggplot(data = maxdev_plot)+
       geom_jitter(aes(x = beat, y = maxdev),
                   width = 0.2, alpha = 0.5, shape = 1, size = 0.5)+
       ylab("max deviation in sec")+
@@ -917,9 +916,7 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
 ## modelling ugofs ----------------
 # for various rhythms as calculated with 
 
-# there is an error thrown for certain rhythms that are too slow for the max orginal
-# needs to check first if theotime_value is bigger than maxoriginal
-# why wasn't that a problem in Matlab?
+  m_ugof <- data.frame()
   
   for (k in 1:length(list_of_files)){
     
@@ -932,26 +929,34 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
     } else if (input$fileextension == "xlsx") {
       data_ugof <- read.xlsx(paste(path, list_of_files[k], sep = "\\"), sheet = 1, colNames = FALSE)
       colnames(data_ugof) <- c("X1", "X2", "X3")
-    } else {NULL} 
+    } else {NULL}
+    
+    
+    # testing
+    #data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
+    #colnames(data_ugof) <- c("X1", "X2", "X3")
     
     data_ugof <- data_ugof[,1]
     
     a <- 0
     
-    for (rhythm in seq(from = 0.1, to = 100, by = 0.01)){
-      #rm(timesteps, count, theotime_value, theotime_seq, x, minValue, maxdev, ugof_value)
+    for (rhythm in seq(from = 0.1, to = 100, by = 0.1)){
+    #for (rhythm in c(1,10)){
+      
+        #rm(timesteps, count, theotime_value, theotime_seq, x, minValue, maxdev, ugof_value)
+      b <- 0
       a <- a +1
       maxoriginal <- max(data_ugof)
       timesteps <- 1000/rhythm
-      count <- 0
+      count <- -1     # needs to be -1, so that it is 0 in the first loop and the counter still works
       theotime_value <- 0
       theotime_seq <- data.frame()
       
       while (theotime_value < maxoriginal){
-        
+        b <- b+1
         count <- count + 1
         theotime_value <- count * timesteps/1000
-        theotime_seq[count,1] <- theotime_value  # here is the problem, theotime_seq is 
+        theotime_seq[b,1] <- theotime_value  # here is the problem, theotime_seq is 
         # only of length 1 for certain rhythms and certain max values of data
         # in min_value[n] <- min(abs(data_ugof[n]- theotime_seq)) this leads to a 
         # problem, because data_ugof[n] is not the same size as theotime_seq
@@ -962,43 +967,43 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
         # from what here? go back to Matlab and check there
         ##### HIER WEITER---------
       }
-        # x <- length(data_ugof)
-        # min_value <- c(1:x)
-        # ugof_value_beat <- c()
-        # 
-        # 
-        # for (n in 1:x){
-        #   
-        #   min_value[n] <- min(abs(data_ugof[n]- theotime_seq))
-        #   
-        # }
-        # 
-        # # calculate uGof
-        # 
-        # maxdev <- timesteps/2/1000
-        # 
-        # ugof_value_beat <- min_value/maxdev
-        # 
-        # 
-        # m_ugof[a,k] <- median(ugof_value_beat[1:length(ugof_value_beat)])  
+        x <- nrow(data_ugof)
+        min_value <- c(1:x)
+        ugof_value_beat <- c()
+
+
+        for (n in 1:x){
+
+          min_value[n] <- min(abs(as.numeric(data_ugof[n,1])- theotime_seq))
+
+        }
+
+        # calculate uGof
+
+        maxdev <- timesteps/2/1000
+
+        ugof_value_beat <- min_value/maxdev
+
+
+        m_ugof[a,k] <- median(ugof_value_beat[1:length(ugof_value_beat)])
       }
       }
     
-  # output$ugof_hist <- renderPlotly({
-  #   
-  #   p <- gather(m_ugof, cols, value) %>% 
-  #     ggplot(aes(x= value))+
-  #     geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change binwidth here
-  #     aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
-  #     xlab("ugof")+                            
-  #     ylab("Percentage [%]")+
-  #     theme_minimal()
-  #   
-  #   ggplotly(p)
-  #   
-  #   p
-  #   
-  # })
+  output$ugof_hist <- renderPlotly({
+
+    p <- gather(m_ugof, cols, value) %>%
+      ggplot(aes(x= value))+
+      geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change binwidth here
+      aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
+      xlab("ugof")+
+      ylab("Percentage [%]")+
+      theme_minimal()
+
+    ggplotly(p)
+
+    p
+
+  })
   
 # code from matlab for modelling ugofs
 #   for k= 1: length(listOfFileNames)
