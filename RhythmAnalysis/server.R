@@ -1009,44 +1009,10 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
 
     p
 
-  })
-  
-# code from matlab for modelling ugofs
-#   for k= 1: length(listOfFileNames)
-#   matfilename = listOfFileNames{:,k};
-#   data = xlsread(matfilename); 
-#   data = data(:,1);
-#   % one sequence, 1000 rhythms
-#   a= 0;
-#   for rhythm = 0.1:0.01:100
-#   clear timesteps count theotime_value theotime_seq x minValue maxdev ugof_value
-#   a = a+1;
-#   maxoriginal = max(data);
-#   timesteps = 1000/rhythm;
-#   count = -1;
-#   theotime_value = 0;
-#   % theotime ioi rhythm
-#   while theotime_value < maxoriginal
-#   count = count + 1;
-#   theotime_value = count * timesteps /1000;
-#   theotime_seq(count+1) = theotime_value;
-#   end
-#   x = length(data);
-#   minValue = [];
-#   ugof_value = [];
-#   for n = 1:x
-#   minValue(n) = min(abs(data(n) - theotime_seq.'));
-# 
-# minValue_mean_ioi = mean(minValue(2:end));
-# end 
-# % calculate uGof ioi rhythm 
-# maxdev = timesteps/2/1000;
-# ugof_value = minValue./maxdev;
-# m_ugof(a,k) = median(ugof_value(2:end)); %calculate the mean of the sequence, maybe it should be median? 
-# end
-# end
+  }) #end renderPlotly ugof_hist
 
-  })
+    }) # end observeEvent input$ugof_detail
+  
 # 04g: Download Results --------------
 
   ## Dataset Results----------
