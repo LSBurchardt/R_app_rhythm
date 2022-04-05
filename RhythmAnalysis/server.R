@@ -504,9 +504,10 @@ for (a in 1:length(list_of_files)) {
          
   ### end recurrence ugof
          results_rhythm[a,9] <<- m_ugof_beat_1 
+         results_rhythm[a,10] <<- mean(min_value, na.rm = TRUE)
          #problem with [a,10] is not showing what I would expect it to show
          silent_beat_ioi <- nrow(theotime_seq)-kk
-         results_rhythm[a,10] <<- silent_beat_ioi
+         results_rhythm[a,11] <<- silent_beat_ioi
          
   ### ugof Fourier --------------
          
@@ -604,14 +605,15 @@ for (a in 1:length(list_of_files)) {
           ### end recurrence plot fft ugof
             
             
-            results_rhythm[a,11] <<- m_ugof_beat_2
-            
+            results_rhythm[a,12] <<- m_ugof_beat_2
+            results_rhythm[a,13] <<- mean(min_value_2, na.rm = TRUE)
             silent_beat_fft <- nrow(theotime_seq_2)-kk
            
-            results_rhythm[a,12] <<- silent_beat_fft} else {
+            results_rhythm[a,14] <<- silent_beat_fft} else {
               
-              results_rhythm[a,11] <<- NA
               results_rhythm[a,12] <<- NA
+              results_rhythm[a,13] <<- NA
+              results_rhythm[a,14] <<- NA
               
             }
          
@@ -727,7 +729,7 @@ for (a in 1:length(list_of_files)) {
       fs <- input$fs
       savename <- input$savename
       results_rhythm <<- cbind(results_rhythm, fs,elements,elements_raw, filenames, savename)
-      colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso", "n_elements","signal_length","ugof_ioi","silent_beats_ioi","ugof_fft","silent_beats_fft", "fs","elements","raw_element_seq", "filename", "savename")
+      colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso", "n_elements","signal_length","ugof_ioi","mean_min_dev_ioi","silent_beats_ioi","ugof_fft","mean_min_dev_fft","silent_beats_fft", "fs","elements","raw_element_seq", "filename", "savename")
       
 
       
@@ -871,7 +873,11 @@ for (a in 1:length(list_of_files)) {
   output$warning_ugof_detail <- renderText({
     
     "Running this analysis is quite time intensive, as all ugofs are calculated between
-    0.1 and 100 Hz for all input files you chose. Are you sure you want to run this analysis?"
+    0.1 and 100 Hz for all input files you chose. The suggestion is, to run the analysis for the
+    example data set of 10 short files, to get an idea of how long this process takes on your
+    local machine. In development this took about 5 minutes with 8GB of RAM and a processor with 
+    4 CPU cores and 1.8 Ghz.   
+    Are you sure you want to run this analysis?"
     
   })
   
@@ -895,29 +901,13 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
     mutate(beat = seq(0.1,100,0.1),
            maxdev = maxdev_plot/1000) #transform max dev from ms to seconds
   
-  output$maxdev100 <- renderPlotly({
-    
-    p <- ggplot(data = maxdev_plot)+
-      geom_jitter(aes(x = beat, y = maxdev),
-                  width = 0.2, alpha = 0.5, shape = 1, size = 0.5)+
-      ylab("max deviation in sec")+
-      xlab("Beat [Hz]")+
-      theme_minimal()+
-      ggtitle("Maximum possible deviation from 1 to 100 Hz")+
-      coord_cartesian(ylim = c(0.001,10))+
-      scale_y_log10(labels = scales::label_comma(accuracy = 0.01))
-
-    p <- ggplotly(p)
-    
-    p
-    
-  })
+  
 
 ## modelling ugofs ----------------
 # for various rhythms as calculated with 
 
   m_ugof <- data.frame()
-  
+  min_value_all <- data.frame()
   for (k in 1:length(list_of_files)){
     
     if (input$fileextension == 'csv'){
@@ -956,21 +946,11 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
         b <- b+1
         count <- count + 1
         theotime_value <- count * timesteps/1000
-        theotime_seq[b,1] <- theotime_value  # here is the problem, theotime_seq is 
-        # only of length 1 for certain rhythms and certain max values of data
-        # in min_value[n] <- min(abs(data_ugof[n]- theotime_seq)) this leads to a 
-        # problem, because data_ugof[n] is not the same size as theotime_seq
-        # probably easiest to implement the if condition in the for loop below
-        # check what happened here in Matlab and why it did work there 
-        #
-        # is there an implementation issue to begin with? what was calculated here? what was subtracted
-        # from what here? go back to Matlab and check there
-        ##### HIER WEITER---------
+        theotime_seq[b,1] <- theotime_value  
       }
         x <- nrow(data_ugof)
         min_value <- c(1:x)
         ugof_value_beat <- c()
-
 
         for (n in 1:x){
 
@@ -984,11 +964,37 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
 
         ugof_value_beat <- min_value/maxdev
 
-
+         
         m_ugof[a,k] <- median(ugof_value_beat[1:length(ugof_value_beat)])
-      }
-      }
+      } # end for loop rhythms
+      } # end for loop files
+## output -------------
+  
+    output$maxdev100 <- renderPlotly({
     
+      # add a legend to this to distinguish between max possible, ioi and fft
+      
+    p <- ggplot()+
+      geom_jitter(data = maxdev_plot,aes(x = beat, y = maxdev),
+                  width = 0.2, alpha = 0.5, shape = 1, size = 0.5)+
+      geom_jitter(data = results_rhythm, aes(x = `ioi_beat`, y = `mean_min_dev_ioi`),
+                  color = "blue")+
+      geom_jitter(data = results_rhythm, aes(x = `fourier_beat`, y = `mean_min_dev_fft`),
+                  color = "darkgreen")+
+      ylab("Deviation in sec")+
+      xlab("Beat [Hz]")+
+      theme_minimal()+
+      ggtitle("Maximum possible deviation from 1 to 100 Hz and calculated deviations")+
+      coord_cartesian(ylim = c(0.001,10))+
+      scale_y_log10(labels = scales::label_comma(accuracy = 0.01))
+    
+    p <- ggplotly(p)
+    
+    p
+    
+  })
+  
+  
   output$ugof_hist <- renderPlotly({
 
     p <- gather(m_ugof, cols, value) %>%
