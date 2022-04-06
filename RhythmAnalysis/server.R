@@ -996,7 +996,11 @@ for (score in 1:length(z_scores)){
        z_scores_sig[score, 2] <- "sig_bad"
          } else {z_scores_sig[score, 2] <- "non_sig"}
 }# end for loop scores
+
   
+# zscores need to be included in some final output or be downloadable in the
+# corresponidng tab with ugof, beat, zscore, mean distribution, std distribution
+# file and ...?
   
 ## output -------------
   
@@ -1070,8 +1074,7 @@ for (score in 1:length(z_scores)){
     
     p
     
-  })
-  
+  }) # end render Plotly ugof-zscore
   
 
     }) # end observeEvent input$ugof_detail
