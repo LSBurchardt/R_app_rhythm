@@ -148,7 +148,9 @@ ui <- fluidPage(
                                   
                                   plotlyOutput("maxdev100"),
                                   
-                                  plotlyOutput("ugof_hist")
+                                  plotlyOutput("ugof_hist"),
+                                  
+                                  plotlyOutput("ugof_zscore")
                                   ##
                          ),
                          tabPanel("Help",

@@ -910,28 +910,28 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
   min_value_all <- data.frame()
   for (k in 1:length(list_of_files)){
     
-    if (input$fileextension == 'csv'){
-      data_ugof <- read_delim(paste(path, list_of_files[k], sep = "\\"), delim  = ",", col_names = FALSE)
-      colnames(data_ugof) <- c("X1", "X2", "X3")
-    } else if (input$fileextension == "xls"){
-      data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
-      colnames(data_ugof) <- c("X1", "X2", "X3")
-    } else if (input$fileextension == "xlsx") {
-      data_ugof <- read.xlsx(paste(path, list_of_files[k], sep = "\\"), sheet = 1, colNames = FALSE)
-      colnames(data_ugof) <- c("X1", "X2", "X3")
-    } else {NULL}
+    # if (input$fileextension == 'csv'){
+    #   data_ugof <- read_delim(paste(path, list_of_files[k], sep = "\\"), delim  = ",", col_names = FALSE)
+    #   colnames(data_ugof) <- c("X1", "X2", "X3")
+    # } else if (input$fileextension == "xls"){
+    #   data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
+    #   colnames(data_ugof) <- c("X1", "X2", "X3")
+    # } else if (input$fileextension == "xlsx") {
+    #   data_ugof <- read.xlsx(paste(path, list_of_files[k], sep = "\\"), sheet = 1, colNames = FALSE)
+    #   colnames(data_ugof) <- c("X1", "X2", "X3")
+    # } else {NULL}
     
     
     # testing
-    #data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
-    #colnames(data_ugof) <- c("X1", "X2", "X3")
+    data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
+    colnames(data_ugof) <- c("X1", "X2", "X3")
     
     data_ugof <- data_ugof[,1]
     
     a <- 0
     
-    for (rhythm in seq(from = 0.1, to = 100, by = 0.1)){
-    #for (rhythm in c(1,10)){
+    #for (rhythm in seq(from = 0.1, to = 100, by = 0.1)){
+    for (rhythm in c(1,10)){
       
         #rm(timesteps, count, theotime_value, theotime_seq, x, minValue, maxdev, ugof_value)
       b <- 0
@@ -968,6 +968,36 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
         m_ugof[a,k] <- median(ugof_value_beat[1:length(ugof_value_beat)])
       } # end for loop rhythms
       } # end for loop files
+  
+## z-score calculation ---------------
+  
+#zscore: z=(x-mean)/standard deviaton
+# mean = mean of modelled distribution
+# standard deviation = standard deviation of modelled distribution
+# x = ugof value
+  
+  ugof_distribution <- gather(m_ugof, cols, value) %>% 
+    summarize_at("value", list(mean = mean, std =sd))
+  
+  
+  zscore_fun <- function(data, mean, std){
+    
+    (data-mean)/std
+    
+  }
+  
+  z_scores <-  zscore_fun(results_rhythm$ugof_ioi, ugof_distribution$mean, ugof_distribution$std)
+  z_scores_sig <- as.data.frame(z_scores)
+  
+for (score in 1:length(z_scores)){
+  if (z_scores[score] <= -1.65){
+            z_scores_sig[score, 2] <- "sig_good"
+  } else if (z_scores[score] >= 1.65){
+       z_scores_sig[score, 2] <- "sig_bad"
+         } else {z_scores_sig[score, 2] <- "non_sig"}
+}# end for loop scores
+  
+  
 ## output -------------
   
     output$maxdev100 <- renderPlotly({
@@ -1005,11 +1035,44 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
       ylab("Percentage [%]")+
       theme_minimal()
 
-    ggplotly(p)
+    p <- ggplotly(p)
 
     p
 
   }) #end renderPlotly ugof_hist
+  
+  
+  output$ugof_zscore <- renderPlotly({
+    
+    sig_data <- cbind(z_scores_sig, results_rhythm$ioi_beat)
+    colnames(sig_data) <- c("zscore", "significance", "ioi_beat")
+    
+    p <-  sig_data %>% 
+      ggplot(aes(x= ioi_beat, y = zscore, fill = significance ))+
+      geom_point(size = 5)+
+      xlab("Beat [Hz]")+
+      ylab("z-score")+
+      #scale_x_continuous(limits = c(0,100))+
+      theme_minimal(base_size = 16)+
+      theme(text=element_text(size=20))#+ #used to be family="serif", changed back to arial(default)
+      # scale_colour_manual(name = "Significance",
+      # labels = c("not sig",
+      #            "bad sig",
+      #            "good sig"),
+      # values = c("#D55E00","#E69F00", "#CC79A7"))+ #"#D55E00" "#0072B2"
+      # scale_fill_manual(name = "Significance",
+      #                   labels = c("not sig",
+      #                              "bad sig",
+      #                              "good sig"),
+      #                   values = c("#D55E00","#E69F00", "#CC79A7"))
+    
+    p <- ggplotly(p)
+    
+    p
+    
+  })
+  
+  
 
     }) # end observeEvent input$ugof_detail
   
