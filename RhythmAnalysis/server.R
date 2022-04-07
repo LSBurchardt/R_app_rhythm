@@ -870,15 +870,17 @@ for (a in 1:length(list_of_files)) {
 # 04f: beat precision details -------------
 ## theoretical maximum deviations ---------
   
-  output$warning_ugof_detail <- renderText({
+  output$warning_ugof_detail <- renderUI({
     
-    "Running this analysis is quite time intensive, as all ugofs are calculated between
+    HTML(paste("<b>Important Remarks:</b>",
+    "1) You need to calculate the standard results first, for this analysis to work! (GO Button in the Sidepanel)",
+    "2) Running this analysis is quite time intensive, as all ugofs are calculated between
     0.1 and 100 Hz for all input files you chose. The suggestion is, to run the analysis for the
     example data set of 10 short files, to get an idea of how long this process takes on your
     local machine. In development this took about 5 minutes with 8GB of RAM and a processor with 
-    4 CPU cores and 1.8 Ghz.   
-    Are you sure you want to run this analysis?"
-    
+    4 CPU cores and 1.8 Ghz.",   
+    "Are you sure you want to run this analysis?", sep ="<br/>")
+    )
   })
   
   observeEvent(input$ugof_detail, {  

@@ -142,7 +142,7 @@ ui <- fluidPage(
                                  ),
                          tabPanel("Beat precision details",
                                   
-                                  textOutput("warning_ugof_detail"),
+                                  uiOutput("warning_ugof_detail"),
                                 
                                   actionButton("ugof_detail", "Calculate now"),
                                   
