@@ -31,7 +31,7 @@ ui <- fluidPage(
   fluidRow(
     column(9,
            # Application title
-           titlePanel(title="Rhythm Analysis for Timeseries" 
+           titlePanel(title="RANTO - Rhythm ANalysis TOol for Timeseries" 
            ),
            offset = 3),
     fluidRow( 
