@@ -96,9 +96,9 @@ for (a in 1:length(list_of_files)) {
   #be aware: independent of your column names, they are overwritten to be X1, X2, and X3
 
         if (input$fileextension == 'csv'){
-          data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ",", col_names = FALSE)
+          data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ";", col_names = TRUE)
           colnames(data) <- c("X1", "X2", "X3")
-        } else if (input$fileextension == "xls"){
+          } else if (input$fileextension == "xls"){
           data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = FALSE)
           colnames(data) <- c("X1", "X2", "X3")
         } else if (input$fileextension == "xlsx") {
@@ -912,21 +912,21 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
   min_value_all <- data.frame()
   for (k in 1:length(list_of_files)){
     
-    # if (input$fileextension == 'csv'){
-    #   data_ugof <- read_delim(paste(path, list_of_files[k], sep = "\\"), delim  = ",", col_names = FALSE)
-    #   colnames(data_ugof) <- c("X1", "X2", "X3")
-    # } else if (input$fileextension == "xls"){
-    #   data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
-    #   colnames(data_ugof) <- c("X1", "X2", "X3")
-    # } else if (input$fileextension == "xlsx") {
-    #   data_ugof <- read.xlsx(paste(path, list_of_files[k], sep = "\\"), sheet = 1, colNames = FALSE)
-    #   colnames(data_ugof) <- c("X1", "X2", "X3")
-    # } else {NULL}
+    if (input$fileextension == 'csv'){
+      data_ugof <- read_delim(paste(path, list_of_files[k], sep = "\\"), delim  = ",", col_names = TRUE)
+      colnames(data_ugof) <- c("X1", "X2", "X3")
+    } else if (input$fileextension == "xls"){
+      data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
+      colnames(data_ugof) <- c("X1", "X2", "X3")
+    } else if (input$fileextension == "xlsx") {
+      data_ugof <- read.xlsx(paste(path, list_of_files[k], sep = "\\"), sheet = 1, colNames = FALSE)
+      colnames(data_ugof) <- c("X1", "X2", "X3")
+    } else {NULL}
     
     
     # testing
-    data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
-    colnames(data_ugof) <- c("X1", "X2", "X3")
+    #data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
+    #colnames(data_ugof) <- c("X1", "X2", "X3")
     
     data_ugof <- data_ugof[,1]
     
@@ -1098,6 +1098,24 @@ for (score in 1:length(z_scores)){
       write.csv(datasetInput(), file, row.names = FALSE)
     }
   )
+  
+  ## IOIs ----------
+  datasetInput <- reactive({
+    
+    ioi_all
+    
+  })
+  
+  output$downloadData_ioi <- downloadHandler(
+    filename = function(){
+      paste("iois_", input$savename,".csv", sep = "")
+    },
+    content = function(file){
+      write.csv(datasetInput(), file, row.names = FALSE)
+    }
+  )
+  
+  
   
   ## Rerun Dataset Results
   
