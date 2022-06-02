@@ -1100,7 +1100,7 @@ for (score in 1:length(z_scores)){
   )
   
   ## IOIs ----------
-  datasetInput <- reactive({
+  datasetInput_ioi <- reactive({
     
     ioi_all
     
@@ -1111,7 +1111,7 @@ for (score in 1:length(z_scores)){
       paste("iois_", input$savename,".csv", sep = "")
     },
     content = function(file){
-      write.csv(datasetInput(), file, row.names = FALSE)
+      write.csv(datasetInput_ioi(), file, row.names = FALSE)
     }
   )
   
