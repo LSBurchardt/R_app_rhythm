@@ -58,7 +58,7 @@ server <- function(input, output) {
   observe({
     if(input$goButton_1 > 0){
       
-      path <<- choose.dir()
+      path <<- svDialogs::dlg_dir()$res
       pattern <<- pattern()
       list_of_files <<- list.files(path = path, pattern = pattern)
       
@@ -95,14 +95,16 @@ for (a in 1:length(list_of_files)) {
          
   #be aware: independent of your column names, they are overwritten to be X1, X2, and X3
 
+  filepath <- file.path(path, list_of_files[a])
+
         if (input$fileextension == 'csv'){
-          data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ";", col_names = TRUE)
+          data <- read_delim(filepath, delim  = ";", col_names = TRUE)
           colnames(data) <- c("X1", "X2", "X3")
           } else if (input$fileextension == "xls"){
-          data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = FALSE)
+          data <- read_xls(filepath, sheet = 1, col_names = FALSE)
           colnames(data) <- c("X1", "X2", "X3")
         } else if (input$fileextension == "xlsx") {
-          data <- read.xlsx(paste(path, list_of_files[a], sep = "\\"), sheet = 1, colNames = FALSE)
+          data <- read.xlsx(filepath, sheet = 1, colNames = FALSE)
           colnames(data) <- c("X1", "X2", "X3")
         } else {NULL}
 
@@ -775,16 +777,18 @@ for (a in 1:length(list_of_files)) {
 #         rerun_ioi --> name of action button
 
 # observeEvent could be used for the goButtons, too?
-  observeEvent(input$rerun_ioi, {  
+  observeEvent(input$rerun_ioi, {
+
+    filepath <- file.path(path, list_of_files[input$file_nr])
     
     if (input$fileextension == 'csv'){
-      data_rerun <- read_delim(paste(path, list_of_files[input$file_nr], sep = "\\"), delim  = ",", col_names = FALSE)
+      data_rerun <- read_delim(filepath, delim  = ",", col_names = FALSE)
       colnames(data_rerun) <- c("X1", "X2", "X3")
     } else if (input$fileextension == "xls"){
-      data_rerun <- read_xls(paste(path, list_of_files[input$file_nr], sep = "\\"), sheet = 1, col_names = FALSE)
+      data_rerun <- read_xls(filepath, sheet = 1, col_names = FALSE)
       colnames(data_rerun) <- c("X1", "X2", "X3")
     } else if (input$fileextension == "xlsx") {
-      data_rerun <- read.xlsx(paste(path, list_of_files[input$file_nr], sep = "\\"), sheet = 1, colNames = FALSE)
+      data_rerun <- read.xlsx(filepath, sheet = 1, colNames = FALSE)
       colnames(data_rerun) <- c("X1", "X2", "X3")
     } else {NULL}
    
@@ -796,7 +800,7 @@ for (a in 1:length(list_of_files)) {
    
    for (x in  1:nrow(data_rerun_section)) {          # start of loop through rows of data to calculate iois
      
-     z = x+1 
+     z = x+1
      ioi_rerun[x,1] <- data_rerun_section[z,1]-data_rerun_section[x,1]
      
    }                                   #end of loop through rows of data to calculate iois
@@ -911,15 +915,17 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
   m_ugof <- data.frame()
   min_value_all <- data.frame()
   for (k in 1:length(list_of_files)){
+
+    filepath <- file.path(path, list_of_files[k])
     
     if (input$fileextension == 'csv'){
-      data_ugof <- read_delim(paste(path, list_of_files[k], sep = "\\"), delim  = ",", col_names = TRUE)
+      data_ugof <- read_delim(filepath, delim  = ",", col_names = TRUE)
       colnames(data_ugof) <- c("X1", "X2", "X3")
     } else if (input$fileextension == "xls"){
-      data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
+      data_ugof <- read_xls(filepath, sheet = 1, col_names = FALSE)
       colnames(data_ugof) <- c("X1", "X2", "X3")
     } else if (input$fileextension == "xlsx") {
-      data_ugof <- read.xlsx(paste(path, list_of_files[k], sep = "\\"), sheet = 1, colNames = FALSE)
+      data_ugof <- read.xlsx(filepath, sheet = 1, colNames = FALSE)
       colnames(data_ugof) <- c("X1", "X2", "X3")
     } else {NULL}
     
