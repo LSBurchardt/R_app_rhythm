@@ -3,4 +3,4 @@ This project makes code exessible to conduct rhythm analysis on a time series wi
 
 To get started with the App look at the Manual (**manual.pdf**, in the folder **RhythmAnalysis**), there everything from download to use and interpretation of results will be presented. 
 
-Note: This is a work in progress and not all functionalities are finished yet. (March, 2022) 
+Note: This is a work in progress and not all functionalities are finished yet. (November, 2022) 
