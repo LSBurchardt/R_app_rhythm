@@ -1,8 +1,8 @@
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
 # 
-# With this app you can analyse the temporal structure or rhythm of a timeseries
-# i.e. animal vocalizations
+# With this app you can analyse the temporal structure or rhythm of a time series
+# i.e. animal vocalizations, human speech, movement patterns, heart beats
 #
 # author: Dr. Lara S. Burchardt
 # github: LSBurchardt//R_app_rhythm
@@ -27,7 +27,7 @@ library(install.load)
 
 install_load("shiny", "shinyFiles","shinybusy", "shinyjs", "shinyWidgets",
              "tidyverse","readxl","openxlsx","svDialogs",
-             "pracma","SynchWave","vegan" ,"corrplot", "plotly","DT", "scales", "stringr")
+             "pracma","SynchWave","vegan" ,"corrplot", "plotly","DT", "scales", "stringr", "Rcpp")
 
 
 #svDialogs: for dialouge boxes, not needed in app, but in raw code

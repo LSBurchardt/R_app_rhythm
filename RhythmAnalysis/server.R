@@ -1,8 +1,8 @@
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
 # 
-# With this app you can analyse the temporal structure or rhythm of a timeseries
-# i.e. animal vocalizations
+# With this app you can analyse the temporal structure or rhythm of a time series
+# i.e. animal vocalizations, human speech, movement patterns, heart beats
 #
 # author: Dr. Lara S. Burchardt
 # github: LSBurchardt//R_app_rhythm
@@ -73,7 +73,7 @@ server <- function(input, output) {
         list
         }) # end renderTable
       
-      } # end if input$go Button
+      } # end of input$go Button
   })# end observe go button
   
 # 04b: Standard Calculations ---------------
@@ -94,19 +94,45 @@ for (a in 1:length(list_of_files)) {
   ## load data ----------
          
   #be aware: independent of your column names, they are overwritten to be X1, X2, and X3
-
+  
+  # transform any timepoint series to start at 0.1 --> maybe the start is at 47098.9 and the second at 47101.1
+  
+  if(input$colnames_present == "TRUE"){
+  colnames <- TRUE} else {colnames <- FALSE}
+  
+  
         if (input$fileextension == 'csv'){
-          data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ";", col_names = TRUE)
+          data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ";", col_names = colnames) #softcoden! colnames TRUE oder FALSE in ui
           colnames(data) <- c("X1", "X2", "X3")
+          #data <- data %>%  select(X1) # only short fix for doreco data word level
           } else if (input$fileextension == "xls"){
-          data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = FALSE)
+          data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = colnames)
           colnames(data) <- c("X1", "X2", "X3")
         } else if (input$fileextension == "xlsx") {
-          data <- read.xlsx(paste(path, list_of_files[a], sep = "\\"), sheet = 1, colNames = FALSE)
+          data <- read.xlsx(paste(path, list_of_files[a], sep = "\\"), sheet = 1, colNames = colnames)
+          
+          if(nrow(data) == 3){
           colnames(data) <- c("X1", "X2", "X3")
+          } else if(nrow(data) == 2){
+            colnames(data) <- c("X1", "X2")
+          } else if (nrow(data) == 1){
+            colnames(data) <- c("X1")}
+          
         } else {NULL}
 
-        
+        if (nrow(data) <= 2){
+          results_rhythm[a,1] <<- a
+          results_rhythm[a,2:14] <<- NA
+          next} 
+  
+  # make sure, every sequence, independent of the actual start point, gets a start point of 0.1
+  # this is to decrease calculation times, as some calculations like theo_time start at 0
+  
+  # make input as question, transformation needed?
+  
+  #subtractor <- as.numeric(data[1,1])
+  data[,1] <- (data[,1]+0.1) - as.numeric(data[1,1])
+  
 
     output$loop_a <- renderText({
          paste("We finished loop", a , "of", length(list_of_files))})
@@ -115,19 +141,21 @@ for (a in 1:length(list_of_files)) {
                 data
          }) #end renderText
 
+         
+         
 ### subset for element types -----------         
 # did you load data with element types in column X3? if-clause to check for third column
-# if not, message is shown that all elements are used, because not subsetable for elementtype        
+# if not, message is shown that all elements are used, because not subsetable for element type        
       
           if("X3" %in% colnames(data) == TRUE) {
 
            elementlist<- as.vector(NULL)
 
            if (input$element_a == TRUE)
-             elementlist <- c(elementlist, "a") else {NULL}
+             elementlist <- c(elementlist, "a") else {NULL} #changed for seal pups, should be a
 
            if (input$element_b == TRUE)
-             elementlist <- c(elementlist, "b") else {NULL}
+             elementlist <- c(elementlist, "b") else {NULL} #changed for seal pups, should be b
 
            if(input$element_c == TRUE)
              elementlist <- c(elementlist, "c") else {NULL}
@@ -141,17 +169,39 @@ for (a in 1:length(list_of_files)) {
            if(input$element_d == TRUE)
              elementlist <- c(elementlist, "f") else {NULL}
            
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "g") else {NULL}
+           if(input$element_c == TRUE)
+             elementlist <- c(elementlist, "h") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "i") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "j") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "k") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "l") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "m") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "n") else {NULL}
+           
 # filter data for the chosen element types
            
            elements_seq[a] <<- str_c(data$X3, collapse = "") #needs to be run before(!) filtering the data
-           #otherwise the saved sequence will be the sequence that was actually analysed, would we want that?
-           # maybe include both?
+           #otherwise the saved sequence will be the sequence that was actually analysed
            
            data <- data %>%
              filter(X3 %in% elementlist)
            
            
-# output elementlist to see, which elements where chosen, just a back up to see, if elementlist
+# output element list to see, which elements where chosen, just a back up to see, if element list
 # works correctly
            
            output$elementlist <- renderTable({
@@ -159,7 +209,7 @@ for (a in 1:length(list_of_files)) {
             elementlist
              
            })
-# else to "X3" %in% colnames(data) == TRUE)
+
            } else {
 
              data <- data
@@ -176,8 +226,6 @@ for (a in 1:length(list_of_files)) {
 ## ioi calc & plot ----------
          ioi <- data.frame()                 # set up empty dataframe to store ioi values in
          
-         #for (a in filenumber){             #start of loop for number of files, needs to be added, maybe better add in main! 
-         
          for (x in  1:nrow(data)) {          # start of loop through rows of data to calculate iois
            
            z = x+1 
@@ -187,8 +235,6 @@ for (a in 1:length(list_of_files)) {
          
          colnames(ioi) <- c("X1")
          
-         #ioi_beat <- 1/mean(ioi$X1, na.rm = TRUE) # calculate mean of iois
-         #ioi_beat <- 1/median(ioi$X1, na.rm = TRUE) #
          ioi_beat <- 1/get(input$method)(ioi$X1, na.rm = TRUE) #the user chooses whether to calculate ioi beat based on median or mean
          ioi_cv <- sd(ioi$X1, na.rm = TRUE)/mean(ioi$X1, na.rm = TRUE)
          ioi_cv_unbiased <-  (1+1/(4*(nrow(ioi)-1)))*ioi_cv
@@ -198,8 +244,7 @@ for (a in 1:length(list_of_files)) {
          results_rhythm[a,2] <<- ioi_beat 
          results_rhythm[a,3] <<- ioi_cv_unbiased
          ioi_all[[a]] <<- ioi
-        
-         #ioi_seq <<- ioi
+
          
 ### plot Beats ------------
          output$plot_beat <- renderPlotly({
@@ -220,7 +265,6 @@ for (a in 1:length(list_of_files)) {
            p
            
          })
-         
          
 ### plot ugof ----------------
          output$plot_ugof <- renderPlotly({
@@ -272,7 +316,7 @@ for (a in 1:length(list_of_files)) {
                                      
            p <- gather(ioi_all, cols, value) %>% 
              ggplot(aes(x= value))+
-             geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change binwidth here
+             geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change bin width here if necessary
              aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
              xlab("IOI [sec]")+                            
              ylab("Percentage [%]")+
@@ -301,7 +345,7 @@ for (a in 1:length(list_of_files)) {
          
          npvi <- c*(100/(length(z)-1))
          
-         results_rhythm[a,4] <<- npvi #change back to 9 when all is running
+         results_rhythm[a,4] <<- npvi 
          
         ## end npvi 
         
@@ -322,9 +366,9 @@ for (a in 1:length(list_of_files)) {
          colnames(binarydata) <<- c('timeseries')
          
          for (l in 1: max(event_timepoint_fs)){
-           #print(l)
+
            for ( i in 1: nrow(event_timepoint_fs)){
-             #print(i)
+
              if (l == event_timepoint_fs[i,1]){
                
                binarydata[l,1] <<- 1 
@@ -343,13 +387,13 @@ for (a in 1:length(list_of_files)) {
          
          k <- which(binarydata != 0, arr.ind = T)   # find outputs all values unequal zero -> finds all 1's, saves indices in k
          X <- binarydata$timeseries[min(k[,1]):max(k[,1])]             # X in binary data cut to start and end with 1
-         L <- length(X)                              # length of actual signal 
-         kk <- nrow(k)                             #number of elements in sequence! save!
+         L <- length(X)                               # length of actual signal 
+         kk <- nrow(k)                                #number of elements in sequence! save!
          
-         fs <- input$fs # should be soft coded to match sampling rate calculated with in "binary"
+         fs <- input$fs 
          X <- 1/L * SynchWave::fftshift(fft(X,L))
-         df <- fs/L #frequency resolution
-         sample_index <- (-L/2):(L/2-1) #ordered index for FFT plot
+         df <- fs/L                             #frequency resolution
+         sample_index <- (-L/2):(L/2-1)         #ordered index for FFT plot
          f <- sample_index*df
          
          index_0 <- which.min(abs(f-0))      #index where f is zero to select only positive fs 
@@ -402,7 +446,6 @@ for (a in 1:length(list_of_files)) {
          rm(maxoriginal, timesteps, theotime_value, theotime_seq)
          
          data_ugof <- data$X1
-         #data_ugof <- pull(data[,1]) #pull doesn't work with all input data, i.e. when loaded from xlsx
          beat_ioi <- results_rhythm[a,2]
          beat_fft <- results_rhythm[a,5]
 
@@ -410,7 +453,6 @@ for (a in 1:length(list_of_files)) {
          
          maxoriginal <- max(data_ugof)
          timesteps <- 1000/round(beat_ioi, digits = 1)
-         #timesteps <- 1000/30
          count <- 0
          theotime_value <- 0
          theotime_seq <- data.frame()
@@ -441,7 +483,37 @@ for (a in 1:length(list_of_files)) {
          ugof_value_beat <- min_value/maxdev;
          
          m_ugof_beat_1 <- median(ugof_value_beat[2:length(ugof_value_beat)])
+
+### npvi of ugof values from ioi beat
          
+         z <- c()
+         b <- c()
+         
+         for (l in 1: length(ugof_value_beat)){
+           
+           #z[l] <- (ugof_value_beat[l,1] - ugof_value_beat[l+1,1])
+           #b[l] <- (ugof_value_beat[l,1] + ugof_value_beat[l+1,1])/2
+           
+           z[l] <- (ugof_value_beat[l] - ugof_value_beat[l+1])
+           b[l] <- (ugof_value_beat[l] + ugof_value_beat[l+1])/2
+         } #end of for loop
+         
+         z <- na.omit(z)
+         b <- na.omit(b)
+         c <- sum(abs(z/b))
+         
+         npvi_ugof_ioi <- c*(100/(length(z)-1))
+
+
+### cv of ugof values
+         
+         ugof_ioi_cv <- sd(ugof_value_beat, na.rm = TRUE)/mean(ugof_value_beat, na.rm = TRUE)
+         ugof_ioi_cv_unbiased <-  (1+1/(4*(length(ugof_value_beat)-1)))*ugof_ioi_cv
+         
+### save ugof values per sequence in list as R document 
+         
+         
+                 
 ###recurrence ugof ioi -------------
          
          output$rec_ugof_plots <- renderUI({
@@ -505,7 +577,6 @@ for (a in 1:length(list_of_files)) {
   ### end recurrence ugof
          results_rhythm[a,9] <<- m_ugof_beat_1 
          results_rhythm[a,10] <<- mean(min_value, na.rm = TRUE)
-         #problem with [a,10] is not showing what I would expect it to show
          silent_beat_ioi <- nrow(theotime_seq)-kk
          results_rhythm[a,11] <<- silent_beat_ioi
          
@@ -542,6 +613,28 @@ for (a in 1:length(list_of_files)) {
             ugof_value_beat_2 <- min_value_2/maxdev_2;
            
             m_ugof_beat_2 <- median(ugof_value_beat_2[2:length(ugof_value_beat_2)])
+            
+            
+### calculate npvi of ugof values of fourier beat            
+            z <- c()
+            b <- c()
+            
+            for (l in 1: length(ugof_value_beat_2)){
+              
+              z[l] <- (ugof_value_beat_2[l] - ugof_value_beat_2[l+1])
+              b[l] <- (ugof_value_beat_2[l] + ugof_value_beat_2[l+1])/2
+              
+            } #end of for loop
+            
+            z <- na.omit(z)
+            b <- na.omit(b)
+            c <- sum(abs(z/b))
+            
+            npvi_ugof_fft <- c*(100/(length(z)-1)) 
+### calculate cv of ugof values of fourier beat
+            
+            ugof_fft_cv <- sd(ugof_value_beat, na.rm = TRUE)/mean(ugof_value_beat_2, na.rm = TRUE)
+            ugof_fft_cv_unbiased <-  (1+1/(4*(length(ugof_value_beat_2)-1)))*ugof_fft_cv
            
 ### recurrence ugof fft -------------
             
@@ -617,6 +710,11 @@ for (a in 1:length(list_of_files)) {
               
             }
          
+         results_rhythm[a,15] <<- npvi_ugof_ioi
+         results_rhythm[a,16] <<- ugof_ioi_cv_unbiased
+         results_rhythm[a,17] <<- npvi_ugof_fft
+         results_rhythm[a,18] <<- ugof_fft_cv_unbiased
+         
         ## end ugof
         
 ## recurrence plot -------
@@ -638,7 +736,6 @@ for (a in 1:length(list_of_files)) {
            
            ioi_seq <- data.frame()                 # set up empty dataframe to store ioi values in
            
-           #for (a in filenumber){             #start of loop for number of files, needs to be added, maybe better add in main!
            
            for (x in  1:nrow(data)) {          # start of loop through rows of data to calculate iois
              
@@ -728,11 +825,16 @@ for (a in 1:length(list_of_files)) {
       
       fs <- input$fs
       savename <- input$savename
-      results_rhythm <<- cbind(results_rhythm, fs,elements,elements_raw, filenames, savename)
-      colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso", "n_elements","signal_length","ugof_ioi","mean_min_dev_ioi","silent_beats_ioi","ugof_fft","mean_min_dev_fft","silent_beats_fft", "fs","elements","raw_element_seq", "filename", "savename")
       
 
+      results_rhythm <<- cbind(results_rhythm, fs,elements,elements_raw, filenames, savename)
       
+      colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso",
+                                     "n_elements","signal_length","ugof_ioi","mean_min_dev_ioi","silent_beats_ioi",
+                                     "ugof_fft","mean_min_dev_fft","silent_beats_fft","npvi_ugof_ioi","cv_ugof_ioi","npvi_ugof_fft","cv_ugof_fft", "fs","elements","raw_element_seq",
+                                     "filename", "savename")
+      
+
    # end of input goBUtton_2, rethink, does that really work in all cases? needs to be later possible when all other options start working
   
   } 
@@ -768,7 +870,7 @@ for (a in 1:length(list_of_files)) {
   }) #end observeEvent reset
 
 #04e: Rerun analysis on subsection chosen from the Recurrence plots------------
-# The rerun is only calculating ioi beat and ugof, should it calculate the others, too?
+# The rerun is currenlty only calculating ioi beat and ugof
 # tags:  file_nr --> File Nr. to rerun analysis
 #         start --> start IOI, for analysis
 #         end   --> end IOI, for analysis
@@ -828,7 +930,7 @@ for (a in 1:length(list_of_files)) {
         
       }
       
-      # match original sequence to theoretical timeseries and calculate actual deviation
+      # match original sequence to theoretical time series and calculate actual deviation
       x <- length(data_rerun_ugof)
       min_value <- c(1:x)
       ugof_value_beat_rerun <- c()
@@ -924,18 +1026,13 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
     } else {NULL}
     
     
-    # testing
-    #data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
-    #colnames(data_ugof) <- c("X1", "X2", "X3")
-    
     data_ugof <- data_ugof[,1]
     
     a <- 0
     
-    #for (rhythm in seq(from = 0.1, to = 100, by = 0.1)){
-    for (rhythm in c(1,10)){
+    for (rhythm in seq(from = 0.1, to = 100, by = 0.1)){
+    #for (rhythm in c(1,10)){
       
-        #rm(timesteps, count, theotime_value, theotime_seq, x, minValue, maxdev, ugof_value)
       b <- 0
       a <- a +1
       maxoriginal <- max(data_ugof)
@@ -975,7 +1072,7 @@ for (x in seq(from = 0.1, to= 100, by = 0.1)){
   
 #zscore: z=(x-mean)/standard deviaton
 # mean = mean of modelled distribution
-# standard deviation = standard deviation of modelled distribution
+# standard deviation = standard deviation of modeled distribution
 # x = ugof value
   
   ugof_distribution <- gather(m_ugof, cols, value) %>% 
@@ -1030,12 +1127,11 @@ for (score in 1:length(z_scores)){
     
   })
   
-  
   output$ugof_hist <- renderPlotly({
 
     p <- gather(m_ugof, cols, value) %>%
       ggplot(aes(x= value))+
-      geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change binwidth here
+      geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change bin width here if necessary
       aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
       xlab("ugof")+
       ylab("Percentage [%]")+
@@ -1046,7 +1142,6 @@ for (score in 1:length(z_scores)){
     p
 
   }) #end renderPlotly ugof_hist
-  
   
   output$ugof_zscore <- renderPlotly({
     
@@ -1115,8 +1210,6 @@ for (score in 1:length(z_scores)){
     }
   )
   
-  
-  
   ## Rerun Dataset Results
   
   datasetInput_rerun <- reactive({
@@ -1133,22 +1226,5 @@ for (score in 1:length(z_scores)){
       write.csv(datasetInput_rerun(), file, row.names = FALSE)
     }
   )
-   
-## Recurrence Plots  
-# https://stackoverflow.com/questions/66788578/shiny-export-multiple-figures-dynamically-created-through-renderui
-# not working
-  
-  # output$downloadPlot <- downloadHandler(
-  #   filename = "RecurrencePlots.png",
-  #   #filename = function(){
-  #   #  paste("recurrence_plot",input$savename,"_fs_",input$fs,".png", sep = "")
-  #   #},
-  #   content = function(file){
-  #     #params <- list(Plot_list = plot_list)
-  #     #png(plot_list)
-  #     png(plot_list, file)
-  #     dev.off()
-  #   }
-  # )
   
 } #end server function

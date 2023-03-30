@@ -1,8 +1,8 @@
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
 # 
-# With this app you can analyse the temporal structure or rhythm of a timeseries
-# i.e. animal vocalizations
+# With this app you can analyse the temporal structure or rhythm of a time series
+# i.e. animal vocalizations, human speech, movement patterns, heart beats
 #
 # author: Dr. Lara S. Burchardt
 # github: LSBurchardt//R_app_rhythm
@@ -50,7 +50,10 @@ ui <- fluidPage(
          
              selectInput("fileextension", "Choose file extension of input data:",
                          choices = c("csv", "xls", "xlsx")),
-
+             
+             selectInput("colnames_present", "Datasheets have column names:",
+                         choices = c("FALSE","TRUE")),
+             
              actionButton("goButton_1","Choose input folder"),
              
              img(src="blank_space.png", width = "100%"),
@@ -74,7 +77,7 @@ ui <- fluidPage(
              #downloadButton("downloadPlot", "Download Recurrence Plots"),
              
              #tags$iframe(style="height:4px; width:1%; scrolling=yes", 
-            #           src="manual.pdf"),
+             #           src="manual.pdf"),
              offset = 1
              ),
       # Show plots of the data
@@ -93,17 +96,23 @@ ui <- fluidPage(
                                   textOutput("loop_a")
                                   ),
                                   column(4,
-                                  #checkboxInput("element_all", "Use all elements.", value = TRUE),
                                   checkboxInput("element_a", "Use element a.", value = TRUE),
                                   checkboxInput("element_b", "Use element b.", value = TRUE),
                                   checkboxInput("element_c", "Use element c.", value = TRUE),
                                   checkboxInput("element_d", "Use element d.", value = TRUE),
                                   checkboxInput("element_e", "Use element e.", value = TRUE),
                                   checkboxInput("element_f", "Use element f.", value = TRUE),
+                                  checkboxInput("element_g", "Use element g.", value = TRUE),
+                                  checkboxInput("element_h", "Use element h.", value = TRUE),
+                                  checkboxInput("element_i", "Use element i.", value = TRUE),
+                                  checkboxInput("element_j", "Use element j.", value = TRUE),
+                                  checkboxInput("element_k", "Use element k.", value = TRUE),
+                                  checkboxInput("element_l", "Use element l.", value = TRUE),
+                                  checkboxInput("element_m", "Use element m.", value = TRUE),
+                                  checkboxInput("element_n", "Use element n.", value = TRUE),
                                   textOutput("element"),
                                   tableOutput("elementlist")
                                   )
-                                  #plotlyOutput("plot_timeseries", inline = TRUE)
                          ),
                          tabPanel("Results", 
                                   
@@ -113,8 +122,6 @@ ui <- fluidPage(
                                   plotlyOutput("plot_ugof"),
                                   plotlyOutput("plot_var"),
                                   plotlyOutput("plot_ioi_all")
-                                  
-                                  #textOutput("data_test")
                                   ##
                          ),
                          tabPanel("Recurrence Plots",
@@ -122,11 +129,11 @@ ui <- fluidPage(
                                   column(4,
                                   uiOutput("plots")
                                   ),
-                                  column(4,
-                                  uiOutput("rec_ugof_plots")
-                                  ),
-                                  column(4,
-                                  uiOutput("rec_ugof_fft_plots"))
+                                  #column(4,
+                                  #uiOutput("rec_ugof_plots")
+                                  #),
+                                  #column(4,
+                                  #uiOutput("rec_ugof_fft_plots"))
                                   ##
                                   ),
                          tabPanel("Re-run analysis on Section",
@@ -157,9 +164,9 @@ ui <- fluidPage(
                                   plotlyOutput("ugof_zscore")
                                   ##
                          ),
-                         tabPanel("Help",
+                         #tabPanel("Help",
                                   ##
-                                  )
+                                  #)
                         ),
             
                )
