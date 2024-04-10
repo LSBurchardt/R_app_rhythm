@@ -133,7 +133,8 @@ ui <- fluidPage(
                                   plotlyOutput("plot_beat"),
                                   plotlyOutput("plot_ugof"),
                                   plotlyOutput("plot_var"),
-                                  plotlyOutput("plot_ioi_all")
+                                  plotlyOutput("plot_ioi_all"),
+                                  plotOutput("plot_rose")
                                   ##
                          ),
                          tabPanel("Recurrence Plots",

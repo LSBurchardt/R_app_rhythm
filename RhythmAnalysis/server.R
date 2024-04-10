@@ -402,6 +402,24 @@ for (a in 1:length(list_of_files)) {
            p
            
          })
+# rose plot --------------------         
+         
+output$plot_rose <- renderPlot({
+  
+  # Create a rose plot with averaged radians
+  rose_plot <- ioi_all %>% 
+    ggplot(aes(x = radians)) +
+    #geom_histogram(binwidth = 2 * pi / 30, fill = "darkblue", color = "white") +
+    geom_histogram(fill = "darkblue", color = "white")+
+    coord_polar(start = 0) +
+    scale_y_continuous(limits = c(0, NA)) +  # Adjust radial limits
+    labs(x = "Radians") +
+    ggtitle(" Polar Plot: IOIs in Reference to IOI Beat")+
+    theme_minimal()
+  
+  rose_plot
+  
+})
          
 ## npvi calculations (ioi_seq) -----------
          
