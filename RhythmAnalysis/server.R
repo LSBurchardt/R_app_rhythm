@@ -89,6 +89,7 @@ results <- observe({
       
       results_rhythm <<- data.frame()      # <<- global assignment operator, needs to be used when changing as well
       ioi_all <<- list(NA)
+      #ioi_all <<- data.frame()
       plot_list <<- list(NA)
     
 for (a in 1:length(list_of_files)) {
@@ -278,6 +279,28 @@ for (a in 1:length(list_of_files)) {
          ioi_cv <- sd(ioi$X1, na.rm = TRUE)/mean(ioi$X1, na.rm = TRUE)
          ioi_cv_unbiased <-  (1+1/(4*(nrow(ioi)-1)))*ioi_cv
          
+         #transforming iois to degrees and radians based on ioi_beat for circular statistics
+         # looping through calculated iois
+         
+         # Function to convert degrees to radians
+         deg_to_rad <- function(degrees) {
+           return(degrees * pi / 180)
+         }
+         reference <- get(input$method)(ioi$X1, na.rm = TRUE)
+         
+         for (x in 1:nrow(ioi)){
+           
+           ioi[x,2] <- ioi[x,1] / reference * 360     
+           ioi[x,3] <- deg_to_rad(ioi[x,2])
+           
+           # Add filename and reference columns
+           ioi[x,4] <- list_of_files[a]  # filename
+           ioi[x,5] <- reference          # reference
+           
+         }
+         
+         colnames(ioi) <- c("ioi", "degree", "radians", "filename", "reference")
+         
          #add parameters to results
          results_rhythm[a,1] <<- a
          results_rhythm[a,2] <<- ioi_beat 
@@ -350,18 +373,34 @@ for (a in 1:length(list_of_files)) {
 ### ioi hist --------------------
          output$plot_ioi_all <- renderPlotly({
            
-           ioi_all <<- as.data.frame(unlist(ioi_all))
-                                     
-           p <- gather(ioi_all, cols, value) %>% 
-             ggplot(aes(x= value))+
-             geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change bin width here if necessary
-             aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
-             xlab("IOI [sec]")+                            
-             ylab("Percentage [%]")+
+           #ioi_all <<- as.data.frame(unlist(ioi_all))
+           
+           # we append all lists in ioi_all, as they are all the same format, for plotting and saving
+           ioi_all <<- do.call(rbind, ioi_all)
+           
+           # p <- gather(ioi_all, cols, value) %>% 
+           #   ggplot(aes(x= value))+
+           #   geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change bin width here if necessary
+           #   aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
+           #   xlab("IOI [sec]")+                            
+           #   ylab("Percentage [%]")+
+           #   theme_minimal()
+           # ggplotly(p)
+           
+           
+           p <- ioi_all %>% 
+             ggplot(aes(x = ioi,
+                        y = stat(count) / sum(stat(count)) * 100,
+                        text = sprintf("Percentage: %0.1f", ..count../sum(..count..) * 100)))+
+             geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE) +               # change bin width here if necessary
+             xlab("IOI [sec]") +                                                           
+             ylab("Percentage [%]") +
              theme_minimal()
-           ggplotly(p)
+           
+           ggplotly(p, tooltip ="text")
            
            p
+           
          })
          
 ## npvi calculations (ioi_seq) -----------
