@@ -110,6 +110,18 @@ ui <- fluidPage(
                                   checkboxInput("element_l", "Use element l.", value = TRUE),
                                   checkboxInput("element_m", "Use element m.", value = TRUE),
                                   checkboxInput("element_n", "Use element n.", value = TRUE),
+                                  checkboxInput("element_n", "Use element o.", value = TRUE),
+                                  checkboxInput("element_n", "Use element p.", value = TRUE),
+                                  checkboxInput("element_n", "Use element q.", value = TRUE),
+                                  checkboxInput("element_n", "Use element r.", value = TRUE),
+                                  checkboxInput("element_n", "Use element s.", value = TRUE),
+                                  checkboxInput("element_n", "Use element t.", value = TRUE),
+                                  checkboxInput("element_n", "Use element u.", value = TRUE),
+                                  checkboxInput("element_n", "Use element v.", value = TRUE),
+                                  checkboxInput("element_n", "Use element w.", value = TRUE),
+                                  checkboxInput("element_n", "Use element x.", value = TRUE),
+                                  checkboxInput("element_n", "Use element y.", value = TRUE),
+                                  checkboxInput("element_n", "Use element z.", value = TRUE),
                                   textOutput("element"),
                                   tableOutput("elementlist")
                                   )

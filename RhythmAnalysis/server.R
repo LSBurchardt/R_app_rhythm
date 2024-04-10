@@ -61,6 +61,8 @@ server <- function(input, output) {
       path <<- choose.dir()
       pattern <<- pattern()
       list_of_files <<- list.files(path = path, pattern = pattern)
+       
+      
       
       output$list_files <- renderTable({
         #list.files(path = path, pattern = pattern)
@@ -102,9 +104,10 @@ for (a in 1:length(list_of_files)) {
   
   
         if (input$fileextension == 'csv'){
-          data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ";", col_names = colnames) #softcoden! colnames TRUE oder FALSE in ui
-          colnames(data) <- c("X1", "X2", "X3")
-          #data <- data %>%  select(X1) # only short fix for doreco data word level
+          data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ";", col_names = colnames) 
+          #colnames(data) <- c("X1", "X2", "X3")
+          colnames(data) <- c("X1", "X2", "X3", "X4")
+          data <- data %>%  select(X1, X2, X3) # only short fix for things with 4 columns (i.e. doreco data word level (then also add X4 for selction here) or zf shared)
           } else if (input$fileextension == "xls"){
           data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = colnames)
           colnames(data) <- c("X1", "X2", "X3")
@@ -192,13 +195,49 @@ for (a in 1:length(list_of_files)) {
            if(input$element_d == TRUE)
              elementlist <- c(elementlist, "n") else {NULL}
            
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "o") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "p") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "q") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "r") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "s") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "t") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "u") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "v") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "w") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "x") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "y") else {NULL}
+           
+           if(input$element_d == TRUE)
+             elementlist <- c(elementlist, "z") else {NULL}
+           
 # filter data for the chosen element types
            
            elements_seq[a] <<- str_c(data$X3, collapse = "") #needs to be run before(!) filtering the data
            #otherwise the saved sequence will be the sequence that was actually analysed
            
            data <- data %>%
-             filter(X3 %in% elementlist)
+             dplyr::filter(X3 %in% elementlist)
            
            
 # output element list to see, which elements where chosen, just a back up to see, if element list
@@ -223,7 +262,7 @@ for (a in 1:length(list_of_files)) {
            } #end of else
 
          
-## ioi calc & plot ----------
+## ioi calc & plot & duration (if applicable) ----------
          ioi <- data.frame()                 # set up empty dataframe to store ioi values in
          
          for (x in  1:nrow(data)) {          # start of loop through rows of data to calculate iois
@@ -245,8 +284,7 @@ for (a in 1:length(list_of_files)) {
          results_rhythm[a,3] <<- ioi_cv_unbiased
          ioi_all[[a]] <<- ioi
 
-         
-### plot Beats ------------
+        ### plot Beats ------------
          output$plot_beat <- renderPlotly({
            
            p <- ggplot(data = results_rhythm, )+
@@ -509,6 +547,13 @@ for (a in 1:length(list_of_files)) {
          
          ugof_ioi_cv <- sd(ugof_value_beat, na.rm = TRUE)/mean(ugof_value_beat, na.rm = TRUE)
          ugof_ioi_cv_unbiased <-  (1+1/(4*(length(ugof_value_beat)-1)))*ugof_ioi_cv
+
+### cv of duration of elements (if applicable, then to be extracted from column 4 of input data and to be written to column 19 of results later)         
+
+        # if(ncol(data) == 4){
+        #   duration_cv <- sd(data$X4, na.rm = TRUE)/mean(data$X4, na.rm = TRUE)
+        #   duration_cv_unbiased <-  (1+1/(4*(length(nrow(data))-1)))*duration_cv
+        # }
          
 ### save ugof values per sequence in list as R document 
          
@@ -516,63 +561,63 @@ for (a in 1:length(list_of_files)) {
                  
 ###recurrence ugof ioi -------------
          
-         output$rec_ugof_plots <- renderUI({
-           plot_output_list <- lapply(1:length(list_of_files), function(i) {
-             plotname <- paste("ugof_plot", i, sep="")
-             plotlyOutput(plotname, height = 300, width = 300)
-           }) # end lapply
-           
-           do.call(tagList, plot_output_list)
-         }) 
-         
-         local({
-         
-         eucl_dist_ugof <- (as.matrix(vegdist(ugof_value_beat, "euclidean", na.rm = TRUE)))
-         eucl_dist_ugof <- eucl_dist_ugof[1:(nrow(eucl_dist_ugof)-1),1:(nrow(eucl_dist_ugof)-1) ]
-         
-         threshold <- mean(ugof_value_beat, na.rm = TRUE)*0.1 # as input?
-         
-         eucl_dist_ugof[eucl_dist_ugof < threshold] <- 0
+         # output$rec_ugof_plots <- renderUI({
+         #   plot_output_list <- lapply(1:length(list_of_files), function(i) {
+         #     plotname <- paste("ugof_plot", i, sep="")
+         #     plotlyOutput(plotname, height = 300, width = 300)
+         #   }) # end lapply
+         #   
+         #   do.call(tagList, plot_output_list)
+         # }) 
+         # 
+         # local({
+         # 
+         # eucl_dist_ugof <- (as.matrix(vegdist(ugof_value_beat, "euclidean", na.rm = TRUE)))
+         # eucl_dist_ugof <- eucl_dist_ugof[1:(nrow(eucl_dist_ugof)-1),1:(nrow(eucl_dist_ugof)-1) ]
+         # 
+         # threshold <- mean(ugof_value_beat, na.rm = TRUE)*0.1 # as input?
+         # 
+         # eucl_dist_ugof[eucl_dist_ugof < threshold] <- 0
          
 # transform matrix as to be able to plot it with ggplot as tile plot
  #https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2
          
-         levels <- 1:(nrow(eucl_dist_ugof))
-         
-         eucl_dist_ugof_2 <- eucl_dist_ugof %>%
-           tibble::as_tibble() %>%
-           rownames_to_column('Var1') %>%
-           gather(Var2, value, -Var1) %>%
-           mutate(
-             Var1 = factor(Var1, levels = levels),
-             Var2 = factor(gsub("V", "", Var2), levels = levels)
-           )
-         
-         my_i <- a
-         plotname <- paste("ugof_plot", my_i, sep="")
-         
-         output[[plotname]] <- renderPlotly({
-          
-        rec_plot_ugof <- ggplot(eucl_dist_ugof_2, aes(Var1, Var2)) +
-           geom_tile(aes(fill = value)) +
-           # geom_text(aes(label = round(value, 1))) +
-           scale_fill_gradient(low = "white", high = "black")+
-           xlab("#ugof")+
-           ylab("#ugof")+
-           coord_fixed(ratio=1)+
-           ggtitle(paste("ugof ioi,File:", results_rhythm$filename[my_i]))+
-           theme_minimal()+
-           theme(
-             plot.background = element_rect(fill = "white"),
-             panel.grid = element_blank(),
-             title = element_text(size = 6))
-         
-         rec_plot_ugof<- ggplotly(rec_plot_ugof)
-         
-         rec_plot_ugof
-         
-         }) #end renderPlotly
-      }) #end local
+      #    levels <- 1:(nrow(eucl_dist_ugof))
+      #    
+      #    eucl_dist_ugof_2 <- eucl_dist_ugof %>%
+      #      tibble::as_tibble() %>%
+      #      rownames_to_column('Var1') %>%
+      #      gather(Var2, value, -Var1) %>%
+      #      mutate(
+      #        Var1 = factor(Var1, levels = levels),
+      #        Var2 = factor(gsub("V", "", Var2), levels = levels)
+      #      )
+      #    
+      #    my_i <- a
+      #    plotname <- paste("ugof_plot", my_i, sep="")
+      #    
+      #    output[[plotname]] <- renderPlotly({
+      #     
+      #   rec_plot_ugof <- ggplot(eucl_dist_ugof_2, aes(Var1, Var2)) +
+      #      geom_tile(aes(fill = value)) +
+      #      # geom_text(aes(label = round(value, 1))) +
+      #      scale_fill_gradient(low = "white", high = "black")+
+      #      xlab("#ugof")+
+      #      ylab("#ugof")+
+      #      coord_fixed(ratio=1)+
+      #      ggtitle(paste("ugof ioi,File:", results_rhythm$filename[my_i]))+
+      #      theme_minimal()+
+      #      theme(
+      #        plot.background = element_rect(fill = "white"),
+      #        panel.grid = element_blank(),
+      #        title = element_text(size = 6))
+      #    
+      #    rec_plot_ugof<- ggplotly(rec_plot_ugof)
+      #    
+      #    rec_plot_ugof
+      #    
+      #    }) #end renderPlotly
+      # }) #end local
          
   ### end recurrence ugof
          results_rhythm[a,9] <<- m_ugof_beat_1 
@@ -715,6 +760,10 @@ for (a in 1:length(list_of_files)) {
          results_rhythm[a,17] <<- npvi_ugof_fft
          results_rhythm[a,18] <<- ugof_fft_cv_unbiased
          
+        # if(ncol(data) == 4){
+        #   results_rhythm[a,19] <<- duration_cv_unbiased
+        # }
+        
         ## end ugof
         
 ## recurrence plot -------
@@ -825,16 +874,25 @@ for (a in 1:length(list_of_files)) {
       
       fs <- input$fs
       savename <- input$savename
+      averaging <- input$method
       
 
-      results_rhythm <<- cbind(results_rhythm, fs,elements,elements_raw, filenames, savename)
+      results_rhythm <<- cbind(results_rhythm, fs,averaging,elements,elements_raw, filenames, savename)
       
+      #if (nrow(data) == 3){
+        
       colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso",
                                      "n_elements","signal_length","ugof_ioi","mean_min_dev_ioi","silent_beats_ioi",
-                                     "ugof_fft","mean_min_dev_fft","silent_beats_fft","npvi_ugof_ioi","cv_ugof_ioi","npvi_ugof_fft","cv_ugof_fft", "fs","elements","raw_element_seq",
+                                     "ugof_fft","mean_min_dev_fft","silent_beats_fft","npvi_ugof_ioi","cv_ugof_ioi","npvi_ugof_fft","cv_ugof_fft", "fs","averaging", "elements","raw_element_seq",
                                      "filename", "savename")
       
-
+      #}# else if (ncol(data) == 4){
+      #  colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso",
+      #                                 "n_elements","signal_length","ugof_ioi","mean_min_dev_ioi","silent_beats_ioi",
+      #                                 "ugof_fft","mean_min_dev_fft","silent_beats_fft","npvi_ugof_ioi","cv_ugof_ioi","npvi_ugof_fft","cv_ugof_fft", "cv_duration_word", "fs","elements","raw_element_seq",
+      #                                 "filename", "savename")
+      #          }
+      
    # end of input goBUtton_2, rethink, does that really work in all cases? needs to be later possible when all other options start working
   
   } 
@@ -1187,7 +1245,7 @@ for (score in 1:length(z_scores)){
   
   output$downloadData <- downloadHandler(
     filename = function(){
-      paste("rhythm_analysis_", input$savename,"_fs_",input$fs,".csv", sep = "")
+      paste("rhythm_analysis_",input$method,"_", input$savename,"_fs_",input$fs,".csv", sep = "")
     },
     content = function(file){
       write.csv(datasetInput(), file, row.names = FALSE)
