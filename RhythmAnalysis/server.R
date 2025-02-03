@@ -93,7 +93,7 @@ results <- observe({
       plot_list <<- list(NA)
     
 for (a in 1:length(list_of_files)) {
-         
+     print(a)    # as a checkpoint, if software crashes because of a faulty file
   ## load data ----------
          
   #be aware: independent of your column names, they are overwritten to be X1, X2, and X3
@@ -106,8 +106,8 @@ for (a in 1:length(list_of_files)) {
   
         if (input$fileextension == 'csv'){
           data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ";", col_names = colnames) 
-          #colnames(data) <- c("X1", "X2", "X3")
-          colnames(data) <- c("X1", "X2", "X3", "X4")
+          colnames(data) <- c("X1", "X2", "X3")
+          #colnames(data) <- c("X1", "X2", "X3", "X4")
           data <- data %>%  select(X1, X2, X3) # only short fix for things with 4 columns (i.e. doreco data word level (then also add X4 for selction here) or zf shared)
           } else if (input$fileextension == "xls"){
           data <- read_xls(paste(path, list_of_files[a], sep = "\\"), sheet = 1, col_names = colnames)
@@ -286,7 +286,7 @@ for (a in 1:length(list_of_files)) {
          deg_to_rad <- function(degrees) {
            return(degrees * pi / 180)
          }
-         reference <- get(input$method)(ioi$X1, na.rm = TRUE)
+         reference <- 1 / get(input$method)(ioi$X1, na.rm = TRUE)
          
          for (x in 1:nrow(ioi)){
            
@@ -299,7 +299,7 @@ for (a in 1:length(list_of_files)) {
            
          }
          
-         colnames(ioi) <- c("ioi", "degree", "radians", "filename", "reference")
+         colnames(ioi) <- c("ioi", "degree", "radians", "filename", "reference_beat")
          
          #add parameters to results
          results_rhythm[a,1] <<- a
@@ -378,26 +378,26 @@ for (a in 1:length(list_of_files)) {
            # we append all lists in ioi_all, as they are all the same format, for plotting and saving
            ioi_all <<- do.call(rbind, ioi_all)
            
-           # p <- gather(ioi_all, cols, value) %>% 
-           #   ggplot(aes(x= value))+
-           #   geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change bin width here if necessary
-           #   aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
-           #   xlab("IOI [sec]")+                            
-           #   ylab("Percentage [%]")+
-           #   theme_minimal()
-           # ggplotly(p)
-           
-           
-           p <- ioi_all %>% 
-             ggplot(aes(x = ioi,
-                        y = stat(count) / sum(stat(count)) * 100,
-                        text = sprintf("Percentage: %0.1f", ..count../sum(..count..) * 100)))+
-             geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE) +               # change bin width here if necessary
-             xlab("IOI [sec]") +                                                           
-             ylab("Percentage [%]") +
+           p <- gather(ioi_all, cols, value) %>%
+             ggplot(aes(x= value))+
+             geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change bin width here if necessary
+             aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
+             xlab("IOI [sec]")+
+             ylab("Percentage [%]")+
              theme_minimal()
+           ggplotly(p)
            
-           ggplotly(p, tooltip ="text")
+           
+           # p <- ioi_all %>% 
+           #   ggplot(aes(x = ioi,
+           #              y = stat(count) / sum(stat(count)) * 100,
+           #              text = sprintf("Percentage: %0.1f", ..count../sum(..count..) * 100)))+
+           #   geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE) +               # change bin width here if necessary
+           #   xlab("IOI [sec]") +                                                           
+           #   ylab("Percentage [%]") +
+           #   theme_minimal()
+           # 
+           # ggplotly(p, tooltip ="text")
            
            p
            

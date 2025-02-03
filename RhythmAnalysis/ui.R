@@ -38,9 +38,9 @@ ui <- fluidPage(
       column(2, 
              # Sidebar with input for analysis options and sampling rate for fourier analysis
              
-             checkboxInput("all", "Run all analysis.", value = TRUE),
+             #checkboxInput("all", "Run all analysis.", value = TRUE),
              
-             checkboxInput("rec_plot", "Produce Recurrence Plots", value = TRUE),
+             #checkboxInput("rec_plot", "Produce Recurrence Plots", value = TRUE),
              
              numericInput("fs", "Sampling Rate (FS) for Fourier Analysis",
                           min= 10, max= 1000, value=200),
@@ -149,34 +149,34 @@ ui <- fluidPage(
                                   #uiOutput("rec_ugof_fft_plots"))
                                   ##
                                   ),
-                         tabPanel("Re-run analysis on Section",
-                                  numericInput("file_nr", "File Nr. to rerun analysis",
-                                               min= 1, max= 1000, value=1),
-                                  numericInput("start", "Start IOI for analysis",
-                                               min= 1, max= 1000, value=1),
-                                  numericInput("end", "End IOI for analysis",
-                                               min= 1, max= 1000, value=50),
-                                  actionButton("rerun_ioi", "Rerun on Section"),
-                                  
-                                  img(src="blank_space.png", width = "100%"),
-                                  
-                                  tableOutput("table_rerun"),
-                                  
-                                  downloadButton("download_rerun_Data", "Download Rerun Results")
-                                 ),
-                         tabPanel("Beat precision details",
-                                  
-                                  uiOutput("warning_ugof_detail"),
-                                
-                                  actionButton("ugof_detail", "Calculate now"),
-                                  
-                                  plotlyOutput("maxdev100"),
-                                  
-                                  plotlyOutput("ugof_hist"),
-                                  
-                                  plotlyOutput("ugof_zscore")
-                                  ##
-                         ),
+                         # tabPanel("Re-run analysis on Section",
+                         #          numericInput("file_nr", "File Nr. to rerun analysis",
+                         #                       min= 1, max= 1000, value=1),
+                         #          numericInput("start", "Start IOI for analysis",
+                         #                       min= 1, max= 1000, value=1),
+                         #          numericInput("end", "End IOI for analysis",
+                         #                       min= 1, max= 1000, value=50),
+                         #          actionButton("rerun_ioi", "Rerun on Section"),
+                         #          
+                         #          img(src="blank_space.png", width = "100%"),
+                         #          
+                         #          tableOutput("table_rerun"),
+                         #          
+                         #          downloadButton("download_rerun_Data", "Download Rerun Results")
+                         #         ),
+                         # tabPanel("Beat precision details",
+                         #          
+                         #          uiOutput("warning_ugof_detail"),
+                         #        
+                         #          actionButton("ugof_detail", "Calculate now"),
+                         #          
+                         #          plotlyOutput("maxdev100"),
+                         #          
+                         #          plotlyOutput("ugof_hist"),
+                         #          
+                         #          plotlyOutput("ugof_zscore")
+                         #          ##
+                         # ),
                          #tabPanel("Help",
                                   ##
                                   #)

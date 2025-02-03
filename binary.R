@@ -28,7 +28,7 @@ library(tidyverse)
 event_timepoint <- vector(length = nrow(data))
 event_timepoint <- data [,1]
 
-event_timepoint_fs <- round(event_timepoint*1000/5) # index of events with fs 200 Hz
+event_timepoint_fs <- round(event_timepoint*1000/fs_dividend) # index of events with fs 200 Hz
 # see whether we can soft code fs somehow and include it as necessary input argument for binary function
 
 event_timepoint_fs <- as.data.frame(event_timepoint_fs)
