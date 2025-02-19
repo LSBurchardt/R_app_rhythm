@@ -45,6 +45,31 @@ server <- function(input, output) {
     paste("written by Dr. Lara S. Burchardt")
   })
   
+  
+# functions ------
+
+    
+# Function to save plots in a dynamically created folder automatically after rendering
+  #save_plot <- function(plot, filename, folder) {
+  #  if (!dir.exists(folder)) {
+  #    dir.create(folder, recursive = TRUE)  # Create folder if it doesn't exist
+  #  }
+  #  saveRDS(plot, file = file.path(folder, filename))
+  #}
+
+  ## preparations ----
+  
+  # create path to save plots 
+  observe({
+    req(input$savename)  # Ensure save name is available
+    
+    # Create folder if it doesn't exist
+    save_path <<- file.path("plots_app", input$savename)
+    if (!dir.exists(save_path)) {
+      dir.create(save_path, recursive = TRUE)
+    }
+    })
+    
 # 04a: choosing data to analyse  -------------------
   
 # File extension, Textoutput which file extension was chosen
@@ -85,15 +110,18 @@ results <- observe({
   
       rm(results_rhythm, binarydata)
   
-    if(input$all == TRUE){
+    #if(input$all == TRUE){
       
       results_rhythm <<- data.frame()      # <<- global assignment operator, needs to be used when changing as well
       ioi_all <<- list(NA)
+      ir_all <<- list(NA)
       #ioi_all <<- data.frame()
       plot_list <<- list(NA)
     
 for (a in 1:length(list_of_files)) {
+  
      print(a)    # as a checkpoint, if software crashes because of a faulty file
+  
   ## load data ----------
          
   #be aware: independent of your column names, they are overwritten to be X1, X2, and X3
@@ -286,7 +314,7 @@ for (a in 1:length(list_of_files)) {
          deg_to_rad <- function(degrees) {
            return(degrees * pi / 180)
          }
-         reference <- 1 / get(input$method)(ioi$X1, na.rm = TRUE)
+         reference <- 1 / get(input$method)(ioi$X1, na.rm = TRUE) #something wrong here, reference does not seem to work 
          
          for (x in 1:nrow(ioi)){
            
@@ -306,7 +334,28 @@ for (a in 1:length(list_of_files)) {
          results_rhythm[a,2] <<- ioi_beat 
          results_rhythm[a,3] <<- ioi_cv_unbiased
          ioi_all[[a]] <<- ioi
-
+### integer ratio calculations ----
+         # based on ioi, which is calculated per sequence
+         
+         n <- nrow(ioi)
+         
+         # Ensure there are at least 2 intervals to calculate the ratio
+         if (n > 1) {
+           
+           # Create a dataframe to store results for the current sequence
+           # Only consider adjacent pairs (i, i+1)
+           integer_r <- data.frame(
+             i = 1:(n-1),        # Index of the first element in the pair
+             j = 2:n             # Index of the second element in the pair (i+1)
+           )
+           
+           # Calculate the ratio for each adjacent pair
+           integer_r$ratio <- with(integer_r, ioi$ioi[i] / (ioi$ioi[i] + ioi$ioi[j]))
+           integer_r$file <- list_of_files[a]
+         }
+         
+         ir_all[[a]] <<- integer_r
+         
         ### plot Beats ------------
          output$plot_beat <- renderPlotly({
            
@@ -320,6 +369,8 @@ for (a in 1:length(list_of_files)) {
              theme_minimal()+
              ggtitle("Beat Results in Hertz")+
              ylim(0,input$fs/2)
+           
+           saveRDS(p, file.path(save_path, "plot_ioi_beat.rds"))
            
            p <- ggplotly(p)
 
@@ -343,8 +394,10 @@ for (a in 1:length(list_of_files)) {
              ylab("Value")+
              xlab("Parameter")+
              theme_minimal()+
-             ggtitle("Goodness of Fit an Coefficient of Variation")+
+             ggtitle("Goodness of Fit and Coefficient of Variation")+
              ylim(0,1)
+           
+           saveRDS(p, file.path(save_path, "plot_beat_precision_cv.rds"))
            
            p <- ggplotly(p)
            
@@ -364,6 +417,8 @@ for (a in 1:length(list_of_files)) {
              ggtitle("normalized Pairwise Variability Index")+
              ylim(0,max(results_rhythm$npvi))
            
+           saveRDS(p, file.path(save_path, "plot_npvi.rds"))
+           
            p <- ggplotly(p)
            
            p
@@ -377,35 +432,68 @@ for (a in 1:length(list_of_files)) {
            
            # we append all lists in ioi_all, as they are all the same format, for plotting and saving
            ioi_all <<- do.call(rbind, ioi_all)
+           # Compute histogram data separately
+           hist_data <- ggplot_build(
+             ggplot(ioi_all, aes(x = ioi)) +
+               geom_histogram(bins = 30, na.rm = TRUE)
+           )$data[[1]]
            
-           p <- gather(ioi_all, cols, value) %>%
-             ggplot(aes(x= value))+
-             geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change bin width here if necessary
-             aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
-             xlab("IOI [sec]")+
-             ylab("Percentage [%]")+
+           # Compute percentage
+           hist_data <- hist_data %>%
+             mutate(percentage = round(count / sum(count) * 100, digits = 2))
+           
+           # Plot with precomputed values
+           p <- ggplot(hist_data, aes(x = xmin, y = percentage)) +
+             geom_bar(
+               stat = "identity",
+               aes(),#text = paste0("Percentage: ", round(percentage, 2), "%")),
+               width = diff(hist_data$x)[1],  # Ensures correct bar width
+               color = "white",
+               fill = "darkblue"
+             ) +
+             xlab("IOI [sec]") +
+             ylab("Percentage [%]") +
              theme_minimal()
-           ggplotly(p)
+           # save plot autoamtically
            
+           saveRDS(p, file.path(save_path, "plot_hist_ioi.rds"))
            
-           # p <- ioi_all %>% 
-           #   ggplot(aes(x = ioi,
-           #              y = stat(count) / sum(stat(count)) * 100,
-           #              text = sprintf("Percentage: %0.1f", ..count../sum(..count..) * 100)))+
-           #   geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE) +               # change bin width here if necessary
-           #   xlab("IOI [sec]") +                                                           
-           #   ylab("Percentage [%]") +
-           #   theme_minimal()
-           # 
-           # ggplotly(p, tooltip ="text")
+           # Convert to plotly with the correct tooltip
+           p_plotly <- ggplotly(p)
+           p_plotly
            
            p
            
          })
-# rose plot --------------------         
+        # integer ratio plot ------
+        
+output$plot_ir_all <- renderPlotly({
+  
+  ir_all <<- do.call(rbind, ir_all)
+  
+  p <- ir_all %>% 
+    ggplot(aes(x = ratio))+
+    geom_density()+
+    coord_cartesian(xlim = c(0, 1))+
+    theme_minimal()+
+    xlab("Integer Ratios")+
+    ylab(" Density")
+  
+  saveRDS(p, file.path(save_path, "plot_integer_ratio.rds"))
+  
+  p_plotly <- ggplotly(p)
+  
+  p_plotly
+  
+  
+}) 
+         
+         
+         # rose plot --------------------         
          
 output$plot_rose <- renderPlot({
   
+  req(ioi_all)
   # Create a rose plot with averaged radians
   rose_plot <- ioi_all %>% 
     ggplot(aes(x = radians)) +
@@ -416,6 +504,8 @@ output$plot_rose <- renderPlot({
     labs(x = "Radians") +
     ggtitle(" Polar Plot: IOIs in Reference to IOI Beat")+
     theme_minimal()
+  
+  saveRDS(rose_plot, file.path(save_path, "plot_ioi_rose.rds"))
   
   rose_plot
   
@@ -908,7 +998,7 @@ output$plot_rose <- renderPlot({
         } #end for loop through list_of_files
       
      
-      } #end of input$all == TRUE
+      #} #end of input$all == TRUE
       
 # 04c: Standard results details ----------
       
@@ -942,16 +1032,6 @@ output$plot_rose <- renderPlot({
                                      "n_elements","signal_length","ugof_ioi","mean_min_dev_ioi","silent_beats_ioi",
                                      "ugof_fft","mean_min_dev_fft","silent_beats_fft","npvi_ugof_ioi","cv_ugof_ioi","npvi_ugof_fft","cv_ugof_fft", "fs","averaging", "elements","raw_element_seq",
                                      "filename", "savename")
-      
-      #}# else if (ncol(data) == 4){
-      #  colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso",
-      #                                 "n_elements","signal_length","ugof_ioi","mean_min_dev_ioi","silent_beats_ioi",
-      #                                 "ugof_fft","mean_min_dev_fft","silent_beats_fft","npvi_ugof_ioi","cv_ugof_ioi","npvi_ugof_fft","cv_ugof_fft", "cv_duration_word", "fs","elements","raw_element_seq",
-      #                                 "filename", "savename")
-      #          }
-      
-   # end of input goBUtton_2, rethink, does that really work in all cases? needs to be later possible when all other options start working
-  
   } 
     
 })  #end of observer results  
@@ -1087,209 +1167,209 @@ output$plot_rose <- renderPlot({
 # 04f: beat precision details -------------
 ## theoretical maximum deviations ---------
   
-  output$warning_ugof_detail <- renderUI({
-    
-    HTML(paste("<b>Important Remarks:</b>",
-    "1) You need to calculate the standard results first, for this analysis to work! (GO Button in the Sidepanel)",
-    "2) Running this analysis is quite time intensive, as all ugofs are calculated between
-    0.1 and 100 Hz for all input files you chose. The suggestion is, to run the analysis for the
-    example data set of 10 short files, to get an idea of how long this process takes on your
-    local machine. In development this took about 5 minutes with 8GB of RAM and a processor with 
-    4 CPU cores and 1.8 Ghz.",   
-    "Are you sure you want to run this analysis?", sep ="<br/>")
-    )
-  })
-  
-  observeEvent(input$ugof_detail, {  
-  
-  maxdev_plot <- vector()
-  count <- 0
-    
-for (x in seq(from = 0.1, to= 100, by = 0.1)){
-    
-      count <- count + 1
-    
-      timestep <- 1000/x
-    
-      maxdev_plot[count] <- timestep/2
-    }
-
-  maxdev_plot <- as.data.frame(maxdev_plot)
-  
-  maxdev_plot <- maxdev_plot %>% 
-    mutate(beat = seq(0.1,100,0.1),
-           maxdev = maxdev_plot/1000) #transform max dev from ms to seconds
-  
-  
-
-## modelling ugofs ----------------
-# for various rhythms as calculated with 
-
-  m_ugof <- data.frame()
-  min_value_all <- data.frame()
-  for (k in 1:length(list_of_files)){
-    
-    if (input$fileextension == 'csv'){
-      data_ugof <- read_delim(paste(path, list_of_files[k], sep = "\\"), delim  = ",", col_names = TRUE)
-      colnames(data_ugof) <- c("X1", "X2", "X3")
-    } else if (input$fileextension == "xls"){
-      data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
-      colnames(data_ugof) <- c("X1", "X2", "X3")
-    } else if (input$fileextension == "xlsx") {
-      data_ugof <- read.xlsx(paste(path, list_of_files[k], sep = "\\"), sheet = 1, colNames = FALSE)
-      colnames(data_ugof) <- c("X1", "X2", "X3")
-    } else {NULL}
-    
-    
-    data_ugof <- data_ugof[,1]
-    
-    a <- 0
-    
-    for (rhythm in seq(from = 0.1, to = 100, by = 0.1)){
-    #for (rhythm in c(1,10)){
-      
-      b <- 0
-      a <- a +1
-      maxoriginal <- max(data_ugof)
-      timesteps <- 1000/rhythm
-      count <- -1     # needs to be -1, so that it is 0 in the first loop and the counter still works
-      theotime_value <- 0
-      theotime_seq <- data.frame()
-      
-      while (theotime_value < maxoriginal){
-        b <- b+1
-        count <- count + 1
-        theotime_value <- count * timesteps/1000
-        theotime_seq[b,1] <- theotime_value  
-      }
-        x <- nrow(data_ugof)
-        min_value <- c(1:x)
-        ugof_value_beat <- c()
-
-        for (n in 1:x){
-
-          min_value[n] <- min(abs(as.numeric(data_ugof[n,1])- theotime_seq))
-
-        }
-
-        # calculate uGof
-
-        maxdev <- timesteps/2/1000
-
-        ugof_value_beat <- min_value/maxdev
-
-         
-        m_ugof[a,k] <- median(ugof_value_beat[1:length(ugof_value_beat)])
-      } # end for loop rhythms
-      } # end for loop files
-  
-## z-score calculation ---------------
-  
-#zscore: z=(x-mean)/standard deviaton
-# mean = mean of modelled distribution
-# standard deviation = standard deviation of modeled distribution
-# x = ugof value
-  
-  ugof_distribution <- gather(m_ugof, cols, value) %>% 
-    summarize_at("value", list(mean = mean, std =sd))
-  
-  
-  zscore_fun <- function(data, mean, std){
-    
-    (data-mean)/std
-    
-  }
-  
-  z_scores <-  zscore_fun(results_rhythm$ugof_ioi, ugof_distribution$mean, ugof_distribution$std)
-  z_scores_sig <- as.data.frame(z_scores)
-  
-for (score in 1:length(z_scores)){
-  if (z_scores[score] <= -1.65){
-            z_scores_sig[score, 2] <- "sig_good"
-  } else if (z_scores[score] >= 1.65){
-       z_scores_sig[score, 2] <- "sig_bad"
-         } else {z_scores_sig[score, 2] <- "non_sig"}
-}# end for loop scores
-
-  
-# zscores need to be included in some final output or be downloadable in the
-# corresponidng tab with ugof, beat, zscore, mean distribution, std distribution
-# file and ...?
-  
-## output -------------
-  
-    output$maxdev100 <- renderPlotly({
-    
-      # add a legend to this to distinguish between max possible, ioi and fft
-      
-    p <- ggplot()+
-      geom_jitter(data = maxdev_plot,aes(x = beat, y = maxdev),
-                  width = 0.2, alpha = 0.5, shape = 1, size = 0.5)+
-      geom_jitter(data = results_rhythm, aes(x = `ioi_beat`, y = `mean_min_dev_ioi`),
-                  color = "blue")+
-      geom_jitter(data = results_rhythm, aes(x = `fourier_beat`, y = `mean_min_dev_fft`),
-                  color = "darkgreen")+
-      ylab("Deviation in sec")+
-      xlab("Beat [Hz]")+
-      theme_minimal()+
-      ggtitle("Maximum possible deviation from 1 to 100 Hz and calculated deviations")+
-      coord_cartesian(ylim = c(0.001,10))+
-      scale_y_log10(labels = scales::label_comma(accuracy = 0.01))
-    
-    p <- ggplotly(p)
-    
-    p
-    
-  })
-  
-  output$ugof_hist <- renderPlotly({
-
-    p <- gather(m_ugof, cols, value) %>%
-      ggplot(aes(x= value))+
-      geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change bin width here if necessary
-      aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
-      xlab("ugof")+
-      ylab("Percentage [%]")+
-      theme_minimal()
-
-    p <- ggplotly(p)
-
-    p
-
-  }) #end renderPlotly ugof_hist
-  
-  output$ugof_zscore <- renderPlotly({
-    
-    sig_data <- cbind(z_scores_sig, results_rhythm$ioi_beat)
-    colnames(sig_data) <- c("zscore", "significance", "ioi_beat")
-    
-    p <-  sig_data %>% 
-      ggplot(aes(x= ioi_beat, y = zscore, fill = significance ))+
-      geom_point(size = 5)+
-      xlab("Beat [Hz]")+
-      ylab("z-score")+
-      #scale_x_continuous(limits = c(0,100))+
-      theme_minimal(base_size = 16)+
-      theme(text=element_text(size=20))#+ #used to be family="serif", changed back to arial(default)
-      # scale_colour_manual(name = "Significance",
-      # labels = c("not sig",
-      #            "bad sig",
-      #            "good sig"),
-      # values = c("#D55E00","#E69F00", "#CC79A7"))+ #"#D55E00" "#0072B2"
-      # scale_fill_manual(name = "Significance",
-      #                   labels = c("not sig",
-      #                              "bad sig",
-      #                              "good sig"),
-      #                   values = c("#D55E00","#E69F00", "#CC79A7"))
-    
-    p <- ggplotly(p)
-    
-    p
-    
-  }) # end render Plotly ugof-zscore
-  
-
-    }) # end observeEvent input$ugof_detail
+#   output$warning_ugof_detail <- renderUI({
+#     
+#     HTML(paste("<b>Important Remarks:</b>",
+#     "1) You need to calculate the standard results first, for this analysis to work! (GO Button in the Sidepanel)",
+#     "2) Running this analysis is quite time intensive, as all ugofs are calculated between
+#     0.1 and 100 Hz for all input files you chose. The suggestion is, to run the analysis for the
+#     example data set of 10 short files, to get an idea of how long this process takes on your
+#     local machine. In development this took about 5 minutes with 8GB of RAM and a processor with 
+#     4 CPU cores and 1.8 Ghz.",   
+#     "Are you sure you want to run this analysis?", sep ="<br/>")
+#     )
+#   })
+#   
+#   observeEvent(input$ugof_detail, {  
+#   
+#   maxdev_plot <- vector()
+#   count <- 0
+#     
+# for (x in seq(from = 0.1, to= 100, by = 0.1)){
+#     
+#       count <- count + 1
+#     
+#       timestep <- 1000/x
+#     
+#       maxdev_plot[count] <- timestep/2
+#     }
+# 
+#   maxdev_plot <- as.data.frame(maxdev_plot)
+#   
+#   maxdev_plot <- maxdev_plot %>% 
+#     mutate(beat = seq(0.1,100,0.1),
+#            maxdev = maxdev_plot/1000) #transform max dev from ms to seconds
+#   
+#   
+# 
+# ## modelling ugofs ----------------
+# # for various rhythms as calculated with 
+# 
+#   m_ugof <- data.frame()
+#   min_value_all <- data.frame()
+#   for (k in 1:length(list_of_files)){
+#     
+#     if (input$fileextension == 'csv'){
+#       data_ugof <- read_delim(paste(path, list_of_files[k], sep = "\\"), delim  = ",", col_names = TRUE)
+#       colnames(data_ugof) <- c("X1", "X2", "X3")
+#     } else if (input$fileextension == "xls"){
+#       data_ugof <- read_xls(paste(path, list_of_files[k], sep = "\\"), sheet = 1, col_names = FALSE)
+#       colnames(data_ugof) <- c("X1", "X2", "X3")
+#     } else if (input$fileextension == "xlsx") {
+#       data_ugof <- read.xlsx(paste(path, list_of_files[k], sep = "\\"), sheet = 1, colNames = FALSE)
+#       colnames(data_ugof) <- c("X1", "X2", "X3")
+#     } else {NULL}
+#     
+#     
+#     data_ugof <- data_ugof[,1]
+#     
+#     a <- 0
+#     
+#     for (rhythm in seq(from = 0.1, to = 100, by = 0.1)){
+#     #for (rhythm in c(1,10)){
+#       
+#       b <- 0
+#       a <- a +1
+#       maxoriginal <- max(data_ugof)
+#       timesteps <- 1000/rhythm
+#       count <- -1     # needs to be -1, so that it is 0 in the first loop and the counter still works
+#       theotime_value <- 0
+#       theotime_seq <- data.frame()
+#       
+#       while (theotime_value < maxoriginal){
+#         b <- b+1
+#         count <- count + 1
+#         theotime_value <- count * timesteps/1000
+#         theotime_seq[b,1] <- theotime_value  
+#       }
+#         x <- nrow(data_ugof)
+#         min_value <- c(1:x)
+#         ugof_value_beat <- c()
+# 
+#         for (n in 1:x){
+# 
+#           min_value[n] <- min(abs(as.numeric(data_ugof[n,1])- theotime_seq))
+# 
+#         }
+# 
+#         # calculate uGof
+# 
+#         maxdev <- timesteps/2/1000
+# 
+#         ugof_value_beat <- min_value/maxdev
+# 
+#          
+#         m_ugof[a,k] <- median(ugof_value_beat[1:length(ugof_value_beat)])
+#       } # end for loop rhythms
+#       } # end for loop files
+#   
+# ## z-score calculation ---------------
+#   
+# #zscore: z=(x-mean)/standard deviaton
+# # mean = mean of modelled distribution
+# # standard deviation = standard deviation of modeled distribution
+# # x = ugof value
+#   
+#   ugof_distribution <- gather(m_ugof, cols, value) %>% 
+#     summarize_at("value", list(mean = mean, std =sd))
+#   
+#   
+#   zscore_fun <- function(data, mean, std){
+#     
+#     (data-mean)/std
+#     
+#   }
+#   
+#   z_scores <-  zscore_fun(results_rhythm$ugof_ioi, ugof_distribution$mean, ugof_distribution$std)
+#   z_scores_sig <- as.data.frame(z_scores)
+#   
+# for (score in 1:length(z_scores)){
+#   if (z_scores[score] <= -1.65){
+#             z_scores_sig[score, 2] <- "sig_good"
+#   } else if (z_scores[score] >= 1.65){
+#        z_scores_sig[score, 2] <- "sig_bad"
+#          } else {z_scores_sig[score, 2] <- "non_sig"}
+# }# end for loop scores
+# 
+#   
+# # zscores need to be included in some final output or be downloadable in the
+# # corresponidng tab with ugof, beat, zscore, mean distribution, std distribution
+# # file and ...?
+#   
+# ## output -------------
+#   
+#     output$maxdev100 <- renderPlotly({
+#     
+#       # add a legend to this to distinguish between max possible, ioi and fft
+#       
+#     p <- ggplot()+
+#       geom_jitter(data = maxdev_plot,aes(x = beat, y = maxdev),
+#                   width = 0.2, alpha = 0.5, shape = 1, size = 0.5)+
+#       geom_jitter(data = results_rhythm, aes(x = `ioi_beat`, y = `mean_min_dev_ioi`),
+#                   color = "blue")+
+#       geom_jitter(data = results_rhythm, aes(x = `fourier_beat`, y = `mean_min_dev_fft`),
+#                   color = "darkgreen")+
+#       ylab("Deviation in sec")+
+#       xlab("Beat [Hz]")+
+#       theme_minimal()+
+#       ggtitle("Maximum possible deviation from 1 to 100 Hz and calculated deviations")+
+#       coord_cartesian(ylim = c(0.001,10))+
+#       scale_y_log10(labels = scales::label_comma(accuracy = 0.01))
+#     
+#     p <- ggplotly(p)
+#     
+#     p
+#     
+#   })
+#   
+#   output$ugof_hist <- renderPlotly({
+# 
+#     p <- gather(m_ugof, cols, value) %>%
+#       ggplot(aes(x= value))+
+#       geom_histogram(color = "white", fill = "darkblue", na.rm = TRUE)+               #change bin width here if necessary
+#       aes(y=stat(count)/sum(stat(count))*100) +     # y is shown in percentages
+#       xlab("ugof")+
+#       ylab("Percentage [%]")+
+#       theme_minimal()
+# 
+#     p <- ggplotly(p)
+# 
+#     p
+# 
+#   }) #end renderPlotly ugof_hist
+#   
+#   output$ugof_zscore <- renderPlotly({
+#     
+#     sig_data <- cbind(z_scores_sig, results_rhythm$ioi_beat)
+#     colnames(sig_data) <- c("zscore", "significance", "ioi_beat")
+#     
+#     p <-  sig_data %>% 
+#       ggplot(aes(x= ioi_beat, y = zscore, fill = significance ))+
+#       geom_point(size = 5)+
+#       xlab("Beat [Hz]")+
+#       ylab("z-score")+
+#       #scale_x_continuous(limits = c(0,100))+
+#       theme_minimal(base_size = 16)+
+#       theme(text=element_text(size=20))#+ #used to be family="serif", changed back to arial(default)
+#       # scale_colour_manual(name = "Significance",
+#       # labels = c("not sig",
+#       #            "bad sig",
+#       #            "good sig"),
+#       # values = c("#D55E00","#E69F00", "#CC79A7"))+ #"#D55E00" "#0072B2"
+#       # scale_fill_manual(name = "Significance",
+#       #                   labels = c("not sig",
+#       #                              "bad sig",
+#       #                              "good sig"),
+#       #                   values = c("#D55E00","#E69F00", "#CC79A7"))
+#     
+#     p <- ggplotly(p)
+#     
+#     p
+#     
+#   }) # end render Plotly ugof-zscore
+#   
+# 
+#     }) # end observeEvent input$ugof_detail
   
 # 04g: Download Results --------------
 
@@ -1324,7 +1404,24 @@ for (score in 1:length(z_scores)){
       write.csv(datasetInput_ioi(), file, row.names = FALSE)
     }
   )
-  
+
+  ## Integer ratios ----
+  datasetInput_ir <- reactive({
+    
+    
+    ir_all
+    
+  })  
+    
+  output$downloadData_ir <- downloadHandler(
+    filename = function(){
+      paste("integer_ratios_raw", input$savename,".csv", sep = "")
+    },
+    content = function(file){
+      write.csv(datasetInput_ir(), file, row.names = FALSE)
+    }
+  )  
+    
   ## Rerun Dataset Results
   
   datasetInput_rerun <- reactive({

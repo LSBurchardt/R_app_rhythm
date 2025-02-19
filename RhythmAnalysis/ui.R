@@ -40,7 +40,7 @@ ui <- fluidPage(
              
              #checkboxInput("all", "Run all analysis.", value = TRUE),
              
-             #checkboxInput("rec_plot", "Produce Recurrence Plots", value = TRUE),
+             checkboxInput("rec_plot", "Produce Recurrence Plots", value = TRUE),
              
              numericInput("fs", "Sampling Rate (FS) for Fourier Analysis",
                           min= 10, max= 1000, value=200),
@@ -73,6 +73,8 @@ ui <- fluidPage(
              img(src="blank_space.png", width = "100%"),
              
              downloadButton("downloadData_ioi", "Download combined raw IOIs"),
+             
+             downloadButton("downloadData_ir", "Download raw integer ratios"),
              
              #downloadButton("downloadPlot", "Download Recurrence Plots"),
              
@@ -126,21 +128,15 @@ ui <- fluidPage(
                                   tableOutput("elementlist")
                                   )
                          ),
-                         tabPanel("Results", 
-                                  
-                                  textOutput("calc"),
-                                  tableOutput("table_ioi"),
-                                  plotlyOutput("plot_beat"),
-                                  plotlyOutput("plot_ugof"),
-                                  plotlyOutput("plot_var"),
+                         tabPanel("Simple Parameters",
                                   plotlyOutput("plot_ioi_all"),
+                                  plotlyOutput("plot_ir_all"),
                                   plotOutput("plot_rose")
-                                  ##
-                         ),
+                                  ),
                          tabPanel("Recurrence Plots",
-                                   
+                                  
                                   column(4,
-                                  uiOutput("plots")
+                                         uiOutput("plots")
                                   ),
                                   #column(4,
                                   #uiOutput("rec_ugof_plots")
@@ -148,7 +144,20 @@ ui <- fluidPage(
                                   #column(4,
                                   #uiOutput("rec_ugof_fft_plots"))
                                   ##
-                                  ),
+                         ),
+                         tabPanel("Rhythm Analysis Results", 
+                                  
+                                  textOutput("calc"),
+                                  tableOutput("table_ioi"),
+                                  plotlyOutput("plot_beat"),
+                                  plotlyOutput("plot_ugof"),
+                                  plotlyOutput("plot_var"),
+                                  
+                                  ##
+                         ),
+                         tabPanel("Beat Precision Analysis",
+                                  )
+                         
                          # tabPanel("Re-run analysis on Section",
                          #          numericInput("file_nr", "File Nr. to rerun analysis",
                          #                       min= 1, max= 1000, value=1),
