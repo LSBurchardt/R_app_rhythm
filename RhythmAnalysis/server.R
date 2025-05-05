@@ -343,13 +343,16 @@ for (a in 1:length(list_of_files)) {
          if (n > 1) {
            
            # Create a dataframe to store results for the current sequence
-           # Only consider adjacent pairs (i, i+1)
-           integer_r <- data.frame(
-             i = 1:(n-1),        # Index of the first element in the pair
-             j = 2:n             # Index of the second element in the pair (i+1)
-           )
+           integer_r <- expand.grid(i = 1:n, j = 1:n)
+           integer_r <- integer_r[integer_r$i != integer_r$j, ]
            
-           # Calculate the ratio for each adjacent pair
+           # Only consider adjacent pairs (i, i+1)
+          #integer_r <- data.frame(
+          #   i = 1:(n-1),        # Index of the first element in the pair
+          #   j = 2:n             # Index of the second element in the pair (i+1)
+          # )
+           
+           # Calculate the ratio for all pair
            integer_r$ratio <- with(integer_r, ioi$ioi[i] / (ioi$ioi[i] + ioi$ioi[j]))
            integer_r$file <- list_of_files[a]
          }
@@ -1390,38 +1393,57 @@ output$plot_rose <- renderPlot({
   )
   
   ## IOIs ----------
-  datasetInput_ioi <- reactive({
-    
-    ioi_all
-    
-  })
-  
+  # datasetInput_ioi <- reactive({
+  #   
+  #   ioi_all
+  #   
+  # })
+  # 
+  # output$downloadData_ioi <- downloadHandler(
+  #   filename = function(){
+  #     paste("iois_", input$savename,".csv", sep = "")
+  #   },
+  #   content = function(file){
+  #     write.csv(datasetInput_ioi(), file, row.names = FALSE)
+  #   }
+  # )
+
   output$downloadData_ioi <- downloadHandler(
-    filename = function(){
-      paste("iois_", input$savename,".csv", sep = "")
+    filename = function() {
+      paste0("iois_", input$savename, ".csv")
     },
-    content = function(file){
-      write.csv(datasetInput_ioi(), file, row.names = FALSE)
+    content = function(file) {
+      write.csv(ioi_all, file, row.names = FALSE)
     }
   )
-
+  
+  
   ## Integer ratios ----
-  datasetInput_ir <- reactive({
-    
-    
-    ir_all
-    
-  })  
+  # datasetInput_ir <- reactive({
+  #   
+  #   
+  #   ir_all
+  #   
+  # })  
+  #   
+  # output$downloadData_ir <- downloadHandler(
+  #   filename = function(){
+  #     paste("integer_ratios_raw", input$savename,".csv", sep = "")
+  #   },
+  #   content = function(file){
+  #     write.csv(datasetInput_ir(), file, row.names = FALSE)
+  #   }
+  # )  
     
   output$downloadData_ir <- downloadHandler(
     filename = function(){
       paste("integer_ratios_raw", input$savename,".csv", sep = "")
     },
     content = function(file){
-      write.csv(datasetInput_ir(), file, row.names = FALSE)
+      write.csv(ir_all, file, row.names = FALSE)
     }
-  )  
-    
+  )
+  
   ## Rerun Dataset Results
   
   datasetInput_rerun <- reactive({
