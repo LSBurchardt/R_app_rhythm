@@ -117,6 +117,18 @@ results <- observe({
       ir_all <<- list(NA)
       #ioi_all <<- data.frame()
       plot_list <<- list(NA)
+      
+      raw_deviations_bp <<- data.frame(
+        filename = character(),
+        obs_number = integer(),
+        obs_value = numeric(),
+        matched_theo = numeric(),
+        raw_deviation = numeric(),
+        abs_deviation = numeric(),
+        best_shift = numeric(),
+        ugof_value_beat = numeric(),
+        stringsAsFactors = FALSE
+      )
     
 for (a in 1:length(list_of_files)) {
   
@@ -133,7 +145,7 @@ for (a in 1:length(list_of_files)) {
   
   
         if (input$fileextension == 'csv'){
-          data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ";", col_names = colnames) 
+          data <- read_delim(paste(path, list_of_files[a], sep = "\\"), delim  = ",", col_names = colnames) 
           colnames(data) <- c("X1", "X2", "X3")
           #colnames(data) <- c("X1", "X2", "X3", "X4")
           data <- data %>%  select(X1, X2, X3) # only short fix for things with 4 columns (i.e. doreco data word level (then also add X4 for selction here) or zf shared)
@@ -627,53 +639,167 @@ output$plot_rose <- renderPlot({
          ### end fourier calc
         ## end fourier
          
-## ugof ------------- 
+## beat precision ------------- 
+# former: ugof - universal-goodness-of-fit
 
-### ugof ioi ---------
-         
-         rm(maxoriginal, timesteps, theotime_value, theotime_seq)
-         
-         data_ugof <- data$X1
+         rm(maxoriginal, timesteps, theotime_value, theotime_seq)         
+         data_ugof <- data$X1             # taking start times of elements for onset analysis
          beat_ioi <- results_rhythm[a,2]
          beat_fft <- results_rhythm[a,5]
-
-         # calculate goodness-of-fit for IOI analysis and Fourier analysis
          
-         maxoriginal <- max(data_ugof)
          timesteps <- 1000/round(beat_ioi, digits = 1)
-         count <- 0
-         theotime_value <- 0
-         theotime_seq <- data.frame()
          
-         while (theotime_value < maxoriginal){
-           
-           count <- count + 1;
-           theotime_value <- count * timesteps /1000;
-           theotime_seq[count,1] <- theotime_value;
-           
-         }
+### phase shift -----
          
-         # match original sequence to theoretical timeseries and calculate actual deviation
-         x <- length(data_ugof)
-         min_value <- c(1:x)
-         ugof_value_beat <- c()
+         # function find_best_phase_shift.R is sourced in "global.R"
          
-         for (n in 1:x){
-           
-           min_value[n] <- min(abs(data_ugof[n]- theotime_seq))
-           
-         }
+         beat_period <- timesteps / 1000  # in seconds
+         #step_size <- input$step_size     # from UI
+         step_size <- 0.01
          
-         # calculate uGof
+         best_phase_shift <- find_best_phase_shift(data_ugof, beat_period, step_size)
+         rmsd_data <- best_phase_shift$rmsd_data
+         rmsd_data$file <- list_of_files[a]
          
-         maxdev <- timesteps/2/1000;
+         all_rmsd_data[[a]] <<- rmsd_data
          
-         ugof_value_beat <- min_value/maxdev;
+         theotime_seq <- best_phase_shift$theotime_seq
+         output$phasePlot <- renderPlot({ best_phase_shift$rmsd_plot }) 
          
-         m_ugof_beat_1 <- median(ugof_value_beat[2:length(ugof_value_beat)])
+         
+### plot phase shift contrours----        
+         
+         combined_data <<- bind_rows(all_rmsd_data)
+         
+         phase_plot_all <- ggplot(combined_data, aes(x = phase_shift, y = rmsd, color = file)) +
+           geom_line(linewidth = 0.5) +
+           labs(
+             title = "Phase Shift Optimization for All Files",
+             x = "Phase Shift (s)",
+             y = "RMS Deviation"
+           ) +
+           theme_minimal()
+         
+         phase_plot_all <- ggplotly(phase_plot_all)
+         
+         output$phasePlot <- renderPlotly({phase_plot_all})              
 
+### raw beat precision values ioi-----     
+         
+        for (n in 1:length(data_ugof)) {
+          
+           #if (!exists("raw_deviations_bp")) {
+          #   raw_deviations_bp <- data.frame(
+          #     filename = character(),
+          #     obs_number = integer(),
+          #     obs_value = numeric(),
+          #     matched_theo = numeric(),
+          #     raw_deviation = numeric(),
+          #     abs_deviation = numeric(),
+          #     best_shift = numeric(),
+          #     ugof_value_beat = numeric(),
+          #     stringsAsFactors = FALSE
+          #   )
+          # }
+           
+           # Calculate max possible deviation for normalization
+           maxdev <- timesteps / 2 / 1000
+           
+           # Raw differences to all theoretical time points
+           raw_differences <- data_ugof[n] - theotime_seq[, 1]
+           
+           # Find index of closest theoretical point
+           closest_idx <- which.min(abs(raw_differences))
+           
+           # Extract closest theoretical time and corresponding raw/abs deviation
+           matched_theo <- theotime_seq[closest_idx, 1]
+           raw_dev <- raw_differences[closest_idx]
+           abs_dev <- abs(raw_dev)
+           ugof <- abs_dev / maxdev  # normalized deviation
+           
+           # Append one row to output dataframe (enforce scalar entries)
+           raw_deviations_bp <<- rbind(
+             raw_deviations_bp,
+             data.frame(
+               filename = as.character(list_of_files[a]),
+               obs_number = n,
+               obs_value = data_ugof[n],
+               matched_theo = matched_theo,
+               raw_deviation = raw_dev,
+               abs_deviation = abs_dev,
+               best_shift = as.numeric(best_phase_shift$best_shift),
+               ugof_value_beat = ugof,
+               stringsAsFactors = FALSE
+             )
+           )
+         }
+         
+         # plot output, histogram around 0 to see deviations
+         
+         output$rawDeviationHist <- renderPlotly({
+           req(raw_deviations_bp)  # ensure the data exists
+           
+           p <- ggplot(raw_deviations_bp, aes(x = raw_deviation)) +
+             geom_histogram(binwidth = 0.01, fill = "steelblue", color = "white") +
+             geom_vline(xintercept = 0, color = "red", linetype = "dashed", linewidth = 1) +
+             labs(title = "Histogram of Raw Deviations",
+                  x = "Deviation (s)",
+                  y = "Frequency") +
+             theme_minimal()
+           
+           ggplotly(p)
+         })  
+         
+         
+         
+### bp ioi ---------
+         
+         # data_ugof <- data$X1
+         # beat_ioi <- results_rhythm[a,2]
+         # beat_fft <- results_rhythm[a,5]
+         # 
+         # # calculate goodness-of-fit for IOI analysis and Fourier analysis
+         # 
+         # maxoriginal <- max(data_ugof)
+         # timesteps <- 1000/round(beat_ioi, digits = 1)
+         # count <- 0
+         # theotime_value <- 0
+         # theotime_seq <- data.frame()
+         # 
+         # while (theotime_value < maxoriginal){
+         #   
+         #   count <- count + 1;
+         #   theotime_value <- count * timesteps /1000;
+         #   theotime_seq[count,1] <- theotime_value;
+         #   
+         # }
+         # 
+         # # match original sequence to theoretical timeseries and calculate actual deviation
+         # x <- length(data_ugof)
+         # min_value <- c(1:x)
+         # ugof_value_beat <- c()
+         # 
+         # for (n in 1:x){
+         #   
+         #   min_value[n] <- min(abs(data_ugof[n]- theotime_seq))
+         #   
+         # }
+         # 
+         # # calculate uGof
+         # 
+         # maxdev <- timesteps/2/1000;
+         # 
+         # ugof_value_beat <- min_value/maxdev;
+         
+         #m_ugof_beat_1 <- median(ugof_value_beat[2:length(ugof_value_beat)])
+
+         m_ugof_beat_1 <- median(raw_deviations_bp$ugof_value_beat)
+
+         
 ### npvi of ugof values from ioi beat
          
+         
+         ugof_value_beat <- raw_deviations_bp$ugof_value_beat
          z <- c()
          b <- c()
          
@@ -705,10 +831,7 @@ output$plot_rose <- renderPlot({
         #   duration_cv_unbiased <-  (1+1/(4*(length(nrow(data))-1)))*duration_cv
         # }
          
-### save ugof values per sequence in list as R document 
-         
-         
-                 
+
 ###recurrence ugof ioi -------------
          
          # output$rec_ugof_plots <- renderUI({
@@ -770,10 +893,11 @@ output$plot_rose <- renderPlot({
       # }) #end local
          
   ### end recurrence ugof
-         results_rhythm[a,9] <<- m_ugof_beat_1 
-         results_rhythm[a,10] <<- mean(min_value, na.rm = TRUE)
+         results_rhythm[a,9] <<- m_ugof_beat_1
+         results_rhythm[a,10] <<- pmin(m_ugof_beat_1, 1 - m_ugof_beat_1)
+         results_rhythm[a,11] <<- mean(min_value, na.rm = TRUE)
          silent_beat_ioi <- nrow(theotime_seq)-kk
-         results_rhythm[a,11] <<- silent_beat_ioi
+         results_rhythm[a,12] <<- silent_beat_ioi
          
   ### ugof Fourier --------------
          
@@ -893,22 +1017,22 @@ output$plot_rose <- renderPlot({
           ### end recurrence plot fft ugof
             
             
-            results_rhythm[a,12] <<- m_ugof_beat_2
-            results_rhythm[a,13] <<- mean(min_value_2, na.rm = TRUE)
+            results_rhythm[a,13] <<- m_ugof_beat_2
+            results_rhythm[a,14] <<- mean(min_value_2, na.rm = TRUE)
             silent_beat_fft <- nrow(theotime_seq_2)-kk
            
-            results_rhythm[a,14] <<- silent_beat_fft} else {
+            results_rhythm[a,15] <<- silent_beat_fft} else {
               
-              results_rhythm[a,12] <<- NA
               results_rhythm[a,13] <<- NA
               results_rhythm[a,14] <<- NA
+              results_rhythm[a,15] <<- NA
               
             }
          
-         results_rhythm[a,15] <<- npvi_ugof_ioi
-         results_rhythm[a,16] <<- ugof_ioi_cv_unbiased
-         results_rhythm[a,17] <<- npvi_ugof_fft
-         results_rhythm[a,18] <<- ugof_fft_cv_unbiased
+         results_rhythm[a,16] <<- npvi_ugof_ioi
+         results_rhythm[a,17] <<- ugof_ioi_cv_unbiased
+         results_rhythm[a,18] <<- npvi_ugof_fft
+         results_rhythm[a,19] <<- ugof_fft_cv_unbiased
          
         # if(ncol(data) == 4){
         #   results_rhythm[a,19] <<- duration_cv_unbiased
@@ -1003,6 +1127,11 @@ output$plot_rose <- renderPlot({
      
       #} #end of input$all == TRUE
       
+      
+# 04 c: phase shift plot -----
+      
+      
+      
 # 04c: Standard results details ----------
       
       filenames <- as.data.frame(list_of_files)
@@ -1032,7 +1161,7 @@ output$plot_rose <- renderPlot({
       #if (nrow(data) == 3){
         
       colnames(results_rhythm) <<- c("index", "ioi_beat", "unbiased_cv",  "npvi", "fourier_beat", "freq_reso",
-                                     "n_elements","signal_length","ugof_ioi","mean_min_dev_ioi","silent_beats_ioi",
+                                     "n_elements","signal_length","ugof_ioi","ugof_sym_ioi","mean_min_dev_ioi","silent_beats_ioi",
                                      "ugof_fft","mean_min_dev_fft","silent_beats_fft","npvi_ugof_ioi","cv_ugof_ioi","npvi_ugof_fft","cv_ugof_fft", "fs","averaging", "elements","raw_element_seq",
                                      "filename", "savename")
   } 
@@ -1441,6 +1570,17 @@ output$plot_rose <- renderPlot({
     },
     content = function(file){
       write.csv(ir_all, file, row.names = FALSE)
+    }
+  )
+  
+  ## raw deviations - beat precision -----
+  
+  output$downloadData_rawdev <- downloadHandler(
+    filename = function() {
+      paste0("raw_deviations_", input$savename, ".csv")
+    },
+    content = function(file) {
+      write.csv(raw_deviations_bp, file, row.names = FALSE)
     }
   )
   

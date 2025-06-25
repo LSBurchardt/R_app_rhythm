@@ -47,7 +47,12 @@ ui <- fluidPage(
              
              selectInput("method", "Which method to use for ioi beat:",
                          choices = c("mean", "median")),
-         
+             numericInput("step_size", 
+                          label = "Phase Shift Step Size (in seconds)", 
+                          value = 0.01, 
+                          min = 0.001, 
+                          max = 0.1, 
+                          step = 0.001),
              selectInput("fileextension", "Choose file extension of input data:",
                          choices = c("csv", "xls", "xlsx")),
              
@@ -75,6 +80,8 @@ ui <- fluidPage(
              downloadButton("downloadData_ioi", "Download combined raw IOIs"),
              
              downloadButton("downloadData_ir", "Download raw integer ratios"),
+             
+             downloadButton("downloadData_rawdev", "Download Raw Deviations"),
              
              #downloadButton("downloadPlot", "Download Recurrence Plots"),
              
@@ -131,7 +138,9 @@ ui <- fluidPage(
                          tabPanel("Simple Parameters",
                                   plotlyOutput("plot_ioi_all"),
                                   plotlyOutput("plot_ir_all"),
-                                  plotOutput("plot_rose")
+                                  #plotOutput("plot_rose"),
+                                  plotlyOutput("phasePlot"),
+                                  plotlyOutput("rawDeviationHist"),
                                   ),
                          tabPanel("Recurrence Plots",
                                   
