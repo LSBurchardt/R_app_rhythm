@@ -48,7 +48,9 @@ results_rhythm <<- data.frame()      # <<- global assignment operator, needs to 
 ioi_all <<- list(NA)
 results_rerun <<- data.frame()       # <<- global assignment operator, needs to be used when changing as well
 elements_seq <<- c()
+all_rmsd_data <<- list()
 
+source("R/find_best_phase_shift.R", local = TRUE)
 # 03: define ui --------------------------------------------------------------
 
 #defined in ui.R
