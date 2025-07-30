@@ -27,8 +27,10 @@ library(install.load)
 
 install_load("shiny", "shinyFiles","shinybusy", "shinyjs", "shinyWidgets",
              "tidyverse","readxl","openxlsx","svDialogs",
-             "pracma","SynchWave","vegan" ,"corrplot", "plotly","DT", "scales", "stringr", "Rcpp")
+             "pracma","SynchWave","vegan" ,"corrplot", "plotly","DT", "scales", "stringr", "Rcpp", "shinyjs")
 
+
+#useShinyjs()
 
 #svDialogs: for dialouge boxes, not needed in app, but in raw code
 #pracma: for fourier, findpeaks
