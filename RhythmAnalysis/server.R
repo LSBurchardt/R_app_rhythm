@@ -183,7 +183,7 @@ server <- function(input, output) {
         req(input$sep_input)
         sepa <- input$sep_input
         
-        if (input$fileextension == 'csv') {
+        #if (input$fileextension == 'csv') {
           data <-
             readr::read_delim(
               paste(path, list_of_files[a], sep = "\\"),
@@ -194,33 +194,33 @@ server <- function(input, output) {
           #colnames(data) <- c("X1", "X2", "X3", "X4")
           data <-
             data %>%  select(X1, X2, X3) # only short fix for things with 4 columns (i.e. doreco data word level (then also add X4 for selction here) or zf shared)
-        } else if (input$fileextension == "xls") {
-          data <-
-            read_xls(
-              paste(path, list_of_files[a], sep = "\\"),
-              sheet = 1,
-              col_names = colnames
-            )
-          colnames(data) <- c("X1", "X2", "X3")
-        } else if (input$fileextension == "xlsx") {
-          data <-
-            read.xlsx(
-              paste(path, list_of_files[a], sep = "\\"),
-              sheet = 1,
-              colNames = colnames
-            )
-          
-          if (nrow(data) == 3) {
-            colnames(data) <- c("X1", "X2", "X3")
-          } else if (nrow(data) == 2) {
-            colnames(data) <- c("X1", "X2")
-          } else if (nrow(data) == 1) {
-            colnames(data) <- c("X1")
-          }
-          
-        } else {
-          NULL
-        }
+        # } else if (input$fileextension == "xls") {
+        #  data <-
+        #    read_xls(
+        #      paste(path, list_of_files[a], sep = "\\"),
+        #      sheet = 1,
+        #      col_names = colnames
+        #    )
+        #  colnames(data) <- c("X1", "X2", "X3")
+        # } else if (input$fileextension == "xlsx") {
+        #  data <-
+        #    read.xlsx(
+        #      paste(path, list_of_files[a], sep = "\\"),
+        #      sheet = 1,
+        #      colNames = colnames
+        #    )
+        # 
+        #  if (nrow(data) == 3) {
+        #    colnames(data) <- c("X1", "X2", "X3")
+        #  } else if (nrow(data) == 2) {
+        #    colnames(data) <- c("X1", "X2")
+        #  } else if (nrow(data) == 1) {
+        #    colnames(data) <- c("X1")
+        #  }
+        # 
+        # } else {
+        #  NULL
+        # }
         
         if (nrow(data) <= 2) {
           results_rhythm[a, 1] <<- a

@@ -103,7 +103,7 @@ ui <- fluidPage(
                    column(4,
                           div(class = "spaced-column",
                               div(class = "input-section-title", "Input Data"),
-                              selectInput("fileextension", "File extension:", choices = c("csv", "xls", "xlsx")),
+                              #selectInput("fileextension", "File extension:", choices = c("csv", "xls", "xlsx")),
                               selectInput("colnames_present", "Column names present?", choices = c("FALSE", "TRUE")),
                               actionButton("goButton_1", "Choose input folder"),
                               textInput("sep_input", "Separator", value = ","),
