@@ -2,14 +2,15 @@
 # minimizing deviations
 
 # author: Lara S. Burchardt with help of ChatGPT
-
 library(ggplot2)
 
 find_best_phase_shift <- function(data_ugof, beat_period, step_size = 0.01) {
   
-  # Create shifts (from 0 to one full beat cycle)
-  phase_shifts <- seq(0, beat_period, by = step_size)
-  maxoriginal <- max(data_ugof)
+  # Extend phase shifts to include negative values (e.g., one full beat before zero)
+  phase_shifts <- seq(-beat_period, beat_period, by = step_size)
+  
+  min_data <- min(data_ugof)
+  max_data <- max(data_ugof)
   
   # Initialize vector to store RMSD per shift
   rmsd_values <- numeric(length(phase_shifts))
@@ -17,19 +18,13 @@ find_best_phase_shift <- function(data_ugof, beat_period, step_size = 0.01) {
   for (i in seq_along(phase_shifts)) {
     
     shift <- phase_shifts[i]
-    # make sure we start shifting the phase such, that all data points are included
-    min_obs <- min(data_ugof)
-    max_obs <- max(data_ugof)
     
-    # Start beat sequence slightly before the earliest observation
-    start_time <- shift + floor((min_obs - shift) / beat_period) * beat_period
-    end_time   <- shift + ceiling((max_obs - shift) / beat_period) * beat_period
+    # Start from earliest needed point and make sure the sequence covers the entire data range
+    theo_seq <- seq(from = min_data - beat_period, to = max_data + beat_period, by = beat_period) + shift
     
-    theo_seq <- seq(from = start_time, to = end_time, by = beat_period)
-    
-    # For each observation, find the closest theoretical point
+    # For each observation, find the smallest absolute deviation to the theoretical points
     deviations <- sapply(data_ugof, function(obs) {
-      min(abs(obs - theo_seq))  # raw deviation
+      min(abs(obs - theo_seq))
     })
     
     # Root-mean-square deviation (RMSD)
@@ -41,25 +36,27 @@ find_best_phase_shift <- function(data_ugof, beat_period, step_size = 0.01) {
   best_shift <- phase_shifts[best_shift_idx]
   
   # Generate final theoretical time sequence
-  theotime_seq <- data.frame(time = seq(from = best_shift, to = maxoriginal + beat_period, by = beat_period))
+  theotime_seq <- data.frame(time = seq(from = min_data - beat_period, to = max_data + beat_period, by = beat_period) + best_shift)
+  
+  # combine all rmsd values with the corresponding phase shifts for plot in server function 
+  rmsd_data <- data.frame(phase_shift = phase_shifts, rmsd = rmsd_values)
   
   # Generate plot
-  #rmsd_plot <- ggplot(data.frame(phase_shift = phase_shifts, rmsd = rmsd_values),
-  #                    aes(x = phase_shift, y = rmsd)) +
-  #  geom_line(color = "steelblue", linewidth = 1) +
-  #  geom_point(aes(x = best_shift, y = rmsd_values[best_shift_idx]), color = "red", size = 2) +
-  #  labs(
-  #    title = "Phase Shift Optimization",
-  #    x = "Phase Shift (s)",
-  #    y = "RMS Deviation"
-  #  ) +
-  #  theme_minimal()
+  rmsd_plot <- ggplot(data.frame(phase_shift = phase_shifts, rmsd = rmsd_values),
+                      aes(x = phase_shift, y = rmsd)) +
+    geom_line(color = "steelblue", linewidth = 1) +
+    geom_point(aes(x = best_shift, y = rmsd_values[best_shift_idx]), color = "red", size = 2) +
+    labs(
+      title = "Phase Shift Optimization",
+      x = "Phase Shift (s)",
+      y = "RMS Deviation"
+    ) +
+    theme_minimal()
   
   return(list(
     best_shift = best_shift,
     theotime_seq = theotime_seq,
-    #rmsd_plot = rmsd_plot,
-    rmsd_data = data.frame(phase_shift = phase_shifts,
-                           rmsd = rmsd_values)
+    rmsd_plot = rmsd_plot,
+    rmsd_data = rmsd_data  
   ))
 }

@@ -28,6 +28,8 @@
 
 
 ui <- fluidPage(
+  useShinyjs(),
+  
   tags$head(
     tags$style(HTML("
       .center-title { text-align: center; margin-top: 20px; margin-bottom: 10px; }
@@ -44,13 +46,30 @@ ui <- fluidPage(
       titlePanel("RANTO - Rhythm ANalysis TOol for Timeseries")
   ),
   
+  # actionLink("toggle_extra_elements", "Show more elements"),
+  # 
+  # hidden(
+  #   div(id = "extra_element_ui",
+  #       uiOutput("element_checkboxes")
+  #   )
+  # ),
+  tags$head(
+    tags$script(HTML("
+    $(document).ready(function() {
+      $('#toggle_extra_elements').on('click', function() {
+        $('#extra_element_ui').toggle();
+      });
+    });
+  "))
+  ),
+  
   # spinner indicating the app is busy
   add_busy_spinner(spin = "fading-circle", color = "#666", position = "top-right", height = "40px", width = "40px"),
   
   # Centered Top Action Buttons
   div(class = "center-buttons",
       #actionButton("goButton_2", "GO"),
-      actionButton("resetAll", "Reset Results Table"),
+      #actionButton("resetAll", "Reset Results Table"),
       downloadButton("downloadData", "Download Results"),
       downloadButton("downloadData_ioi", "Download combined raw IOIs"),
       downloadButton("downloadData_ir", "Download raw integer ratios"),
@@ -70,7 +89,13 @@ ui <- fluidPage(
                               div(class = "input-section-title", "Analysis Settings"),
                               selectInput("method", "Method for ioi beat:", choices = c("mean", "median")),
                               numericInput("step_size", "Phase Shift Step Size (s)", value = 0.01, min = 0.001, max = 10, step = 0.001),
-                              numericInput("fs", "Sampling Rate (FS)", min = 10, max = 1000, value = 20)
+                              selectInput("ratio_method", "Integer ratio method",
+                                          choices = c("All pairs" = "all", "Random pairs" = "random"),
+                                          selected = "all"),
+                              numericInput("n_random_pairs", "Number of random pairs (if applicable)",
+                                           value = 20, min = 20),
+                              numericInput("seed", "Random seed (for reproducibility)", value = 123, min = 1),
+                              numericInput("fs", "Sampling Rate (FS) for Fourier Analysis", min = 10, max = 1000, value = 20)
                           )
                    ),
                    
@@ -110,14 +135,35 @@ ui <- fluidPage(
                               checkboxInput("element_i", "Use element i", TRUE),
                               checkboxInput("element_j", "Use element j", TRUE),
                               
+                              
+                             
+                              tags$div(style = "margin-top: 10px; margin-bottom: 5px;",
+                                       tags$strong("Need more elements?"),
+                                       tags$p("Click below to select elements beyond j.")
+                              ),
                               actionLink("toggle_extra_elements", "Show more elements"),
-                              div(id = "extra_element_ui", style = "display:none;",
-                                  uiOutput("element_checkboxes")  # k–z via checkboxGroupInput
+                              
+                              # Hidden container for extra checkboxes (K–Z)
+                              tags$div(
+                                id = "extra_element_ui",
+                                style = "display: none;",
+                                uiOutput("element_checkboxes")
                               ),
                               
-                              tags$p("Need more elements? Please see the Manual (page xx) for details.")
+                              # Include toggle JavaScript
+                              tags$head(
+                                tags$script(HTML("
+      $(document).ready(function() {
+        $('#toggle_extra_elements').on('click', function() {
+          $('#extra_element_ui').toggle();
+        });
+      });
+    "))
+                              )
+                              ),
+                              
+                              #tags$p("Need more elements? Please see the Manual (page xx) for details.")
                           )
-                   )
                  ),
                  
                  # Duplicated GO Button at bottom

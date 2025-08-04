@@ -27,7 +27,7 @@ library(install.load)
 
 install_load("shiny", "shinyFiles","shinybusy", "shinyjs", "shinyWidgets",
              "tidyverse","readxl","openxlsx","svDialogs",
-             "pracma","SynchWave","vegan" ,"corrplot", "plotly","DT", "scales", "stringr", "Rcpp", "shinyjs")
+             "pracma","SynchWave","vegan" ,"corrplot", "plotly","DT", "scales", "stringr", "Rcpp")
 
 
 #useShinyjs()

@@ -88,8 +88,6 @@ server <- function(input, output) {
       pattern <<- pattern()
       list_of_files <<- list.files(path = path, pattern = pattern)
       
-      
-      
       output$list_files <- renderTable({
         #list.files(path = path, pattern = pattern)
         
@@ -129,22 +127,17 @@ server <- function(input, output) {
   
   ## 4d: additional elements ----
   
-  output$element_checkboxes <- renderUI({
-    # Only show elements beyond "j"
-    extra_elements <-
-      elementlist[elementlist %in% letters[11:26]]  # k to z
-    
-    checkboxGroupInput(
-      inputId = "element_extra",
-      label = "Select additional elements (k–z):",
-      choices = extra_elements,
-      selected = NULL  # or selected = extra_elements if you want preselection
-    )
+  observeEvent(input$toggle_extra_elements, {
+    toggle("extra_element_ui")
   })
   
-  observeEvent(input$toggle_extra_elements, {
-    shinyjs::toggle(id = "extra_element_ui")
+  output$element_checkboxes <- renderUI({
+    checkboxGroupInput("element_extra_list",
+                       label = "Select additional elements:",
+                       choices = letters[11:26],  # k–z
+                       selected = NULL)
   })
+  
   
   # 05: Calculations ---------------
   results <- observe({
@@ -252,11 +245,8 @@ server <- function(input, output) {
           data
         }) #end renderText
         
-        
-        
         ### subset for element types -----------
-        # did you load data with element types in column X3? if-clause to check for third column
-        # if not, message is shown that all elements are used, because not subsetable for element type
+       
         
         if ("X3" %in% colnames(data)) {
           # 1. Collect fixed checkboxes (a–j)
@@ -304,9 +294,10 @@ server <- function(input, output) {
           )
           
           # 2. Combine with dynamically selected extras (k–z)
-          if (!is.null(input$element_extra)) {
-            elementlist <- c(elementlist, input$element_extra)
+          if (!is.null(input$element_extra_list)) {
+            elementlist <- c(elementlist, input$element_extra_list)
           }
+          
           
           # 3. Save the unfiltered full element sequence
           elements_seq[a] <<- str_c(data$X3, collapse = "")
@@ -315,97 +306,6 @@ server <- function(input, output) {
           data <- data %>% dplyr::filter(X3 %in% elementlist)
         }
         
-        # if("X3" %in% colnames(data) == TRUE) {
-        #
-        #  elementlist<- as.vector(NULL)
-        #
-        #  if (input$element_a == TRUE)
-        #    elementlist <- c(elementlist, "a") else {NULL} #changed for seal pups, should be a
-        #
-        #  if (input$element_b == TRUE)
-        #    elementlist <- c(elementlist, "b") else {NULL} #changed for seal pups, should be b
-        #
-        #  if(input$element_c == TRUE)
-        #    elementlist <- c(elementlist, "c") else {NULL}
-        #
-        #  if(input$element_d == TRUE)
-        #    elementlist <- c(elementlist, "d") else {NULL}
-        #
-        #  if(input$element_e == TRUE)
-        #    elementlist <- c(elementlist, "e") else {NULL}
-        #
-        #  if(input$element_f == TRUE)
-        #    elementlist <- c(elementlist, "f") else {NULL}
-        #
-        #  if(input$element_g == TRUE)
-        #    elementlist <- c(elementlist, "g") else {NULL}
-        #
-        #  if(input$element_h == TRUE)
-        #    elementlist <- c(elementlist, "h") else {NULL}
-        #
-        #  if(input$element_i == TRUE)
-        #    elementlist <- c(elementlist, "i") else {NULL}
-        #
-        #  if(input$element_j == TRUE)
-        #    elementlist <- c(elementlist, "j") else {NULL}
-        #
-        # if(input$element_k == TRUE)
-        #   elementlist <- c(elementlist, "k") else {NULL}
-        #
-        # if(input$element_l == TRUE)
-        #   elementlist <- c(elementlist, "l") else {NULL}
-        #
-        # if(input$element_m == TRUE)
-        #   elementlist <- c(elementlist, "m") else {NULL}
-        #
-        # if(input$element_n == TRUE)
-        #   elementlist <- c(elementlist, "n") else {NULL}
-        #
-        # if(input$element_o == TRUE)
-        #   elementlist <- c(elementlist, "o") else {NULL}
-        #
-        # if(input$element_p == TRUE)
-        #   elementlist <- c(elementlist, "p") else {NULL}
-        #
-        # if(input$element_q == TRUE)
-        #   elementlist <- c(elementlist, "q") else {NULL}
-        #
-        # if(input$element_r == TRUE)
-        #   elementlist <- c(elementlist, "r") else {NULL}
-        #
-        # if(input$element_s == TRUE)
-        #   elementlist <- c(elementlist, "s") else {NULL}
-        #
-        # if(input$element_t == TRUE)
-        #   elementlist <- c(elementlist, "t") else {NULL}
-        #
-        # if(input$element_u == TRUE)
-        #   elementlist <- c(elementlist, "u") else {NULL}
-        #
-        # if(input$element_v == TRUE)
-        #   elementlist <- c(elementlist, "v") else {NULL}
-        #
-        # if(input$element_w == TRUE)
-        #   elementlist <- c(elementlist, "w") else {NULL}
-        #
-        # if(input$element_x == TRUE)
-        #   elementlist <- c(elementlist, "x") else {NULL}
-        #
-        # if(input$element_y == TRUE)
-        #   elementlist <- c(elementlist, "y") else {NULL}
-        #
-        # if(input$element_z == TRUE)
-        #   elementlist <- c(elementlist, "z") else {NULL}
-        
-        # filter data for the chosen element types
-        
-        #elements_seq[a] <<- str_c(data$X3, collapse = "") #needs to be run before(!) filtering the data
-        #otherwise the saved sequence will be the sequence that was actually analysed
-        
-        #data <- data %>%
-        #   dplyr::filter(X3 %in% elementlist)
-        
-        
         # output element list to see, which elements where chosen, just a back up to see, if element list
         # works correctly
         
@@ -413,19 +313,6 @@ server <- function(input, output) {
           elementlist
           
         })
-        
-        #  } else {
-        #
-        #    data <- data
-        #
-        # output$element <- renderText({
-        #
-        #      print("You did not assign different element types. All elements will be used.")
-        #
-        #    })
-        #
-        #  } #end of else
-        
         
         ## ioi calc & plot & duration (if applicable) ----------
         ioi <-
@@ -450,59 +337,77 @@ server <- function(input, output) {
         #transforming iois to degrees and radians based on ioi_beat for circular statistics
         # looping through calculated iois
         
-        # Function to convert degrees to radians
-        deg_to_rad <- function(degrees) {
-          return(degrees * pi / 180)
-        }
-        reference <-
-          1 / get(input$method)(ioi$X1, na.rm = TRUE) #something wrong here, reference does not seem to work
+       # # Function to convert degrees to radians
+      #  deg_to_rad <- function(degrees) {
+       #   return(degrees * pi / 180)
+        #}
+        #reference <-
+        #  1 / get(input$method)(ioi$X1, na.rm = TRUE) #something wrong here, reference does not seem to work
+        
+      #  for (x in 1:nrow(ioi)) {
+      #    ioi[x, 2] <- ioi[x, 1] / reference * 360
+      #    ioi[x, 3] <- deg_to_rad(ioi[x, 2])
+      #    
+      #    # Add filename and reference columns
+      #    ioi[x, 4] <- list_of_files[a]  # filename
+      #    ioi[x, 5] <- reference          # reference
+      #    
+      #  }
+        # 
+        # deg_to_rad <- function(degrees) {
+        #   return(degrees * pi / 180)
+        # }
+        
+        # reference is frequency in Hz (beats per second)
+        reference_freq <- round(get(input$method)(ioi$X1, na.rm = TRUE), digits = 3)  # Hz
+        # reference_period <- 1 / reference_freq  # seconds per beat
+        # 
+        # for (x in 1:nrow(ioi)) {
+        #   phase_fraction <- ioi[x, 1] / reference_period
+        #   angle_deg <- (phase_fraction * 360) %% 360
+        #   angle_rad <- deg_to_rad(angle_deg)
+        #   
+        #   ioi[x, 2] <- angle_deg
+        #   ioi[x, 3] <- angle_rad
+        #   ioi[x, 4] <- list_of_files[a]  # filename
+        #   ioi[x, 5] <- reference_freq    # frequency in Hz
+        # }
         
         for (x in 1:nrow(ioi)) {
-          ioi[x, 2] <- ioi[x, 1] / reference * 360
-          ioi[x, 3] <- deg_to_rad(ioi[x, 2])
-          
-          # Add filename and reference columns
-          ioi[x, 4] <- list_of_files[a]  # filename
-          ioi[x, 5] <- reference          # reference
-          
+        ioi[x, 2] <- list_of_files[a]  # filename
+        ioi[x, 3] <- reference_freq    # frequency in Hz
         }
         
         colnames(ioi) <-
           c("ioi",
-            "degree",
-            "radians",
             "filename",
             "reference_beat")
+          # c("ioi",
+          #   "degree",
+          #   "radians",
+          #   "filename",
+          #   "reference_beat")
         
         #add parameters to results
         results_rhythm[a, 1] <<- a
         results_rhythm[a, 2] <<- ioi_beat
         results_rhythm[a, 3] <<- ioi_cv_unbiased
         ioi_all[[a]] <<- ioi
+        
         ### integer ratio calculations ----
         # based on ioi, which is calculated per sequence
         
-        n <- nrow(ioi)
+        ioi_vec <- ioi$ioi  # 
         
-        # Ensure there are at least 2 intervals to calculate the ratio
-        if (n > 1) {
-          # Create a dataframe to store results for the current sequence
-          integer_r <- expand.grid(i = 1:n, j = 1:n)
-          integer_r <- integer_r[integer_r$i != integer_r$j,]
-          
-          # Only consider adjacent pairs (i, i+1)
-          #integer_r <- data.frame(
-          #   i = 1:(n-1),        # Index of the first element in the pair
-          #   j = 2:n             # Index of the second element in the pair (i+1)
-          # )
-          
-          # Calculate the ratio for all pair
-          integer_r$ratio <-
-            with(integer_r, ioi$ioi[i] / (ioi$ioi[i] + ioi$ioi[j]))
-          integer_r$file <- list_of_files[a]
-        }
+        integer_r <- compute_integer_ratios(
+          ioi_vec = ioi_vec,
+          method = input$ratio_method,
+          n_pairs = input$n_random_pairs,
+          seed = input$seed
+        )
         
-        ir_all[[a]] <<- integer_r
+        integer_r$file <- list_of_files[a]  # Add filename to integer ratios
+        ir_all[[a]] <<- integer_r           # combining all integer ratios, calcualted per file in a list
         
         ### plot Beats ------------
         output$plot_beat <- renderPlotly({
@@ -654,6 +559,7 @@ server <- function(input, output) {
           p <- ir_all %>%
             ggplot(aes(x = ratio)) +
             geom_density() +
+            geom_density(aes(color = adjacent))+
             coord_cartesian(xlim = c(0, 1)) +
             theme_minimal() +
             xlab("Integer Ratios") +
@@ -833,8 +739,8 @@ server <- function(input, output) {
         # function find_best_phase_shift.R is sourced in "global.R"
         
         beat_period <- timesteps / 1000  # in seconds
-        #step_size <- input$step_size     # from UI
-        step_size <- 0.01
+        step_size <- input$step_size     # from UI
+        #step_size <- 0.01
         
         best_phase_shift <-
           find_best_phase_shift(data_ugof, beat_period, step_size)
@@ -1010,16 +916,6 @@ server <- function(input, output) {
             ugof_value_beat
           ) - 1))) * ugof_ioi_cv
         
-        ### cv of duration of elements (if applicable, then to be extracted from column 4 of input data and to be written to column 19 of results later)
-        
-        # if(ncol(data) == 4){
-        #   duration_cv <- sd(data$X4, na.rm = TRUE)/mean(data$X4, na.rm = TRUE)
-        #   duration_cv_unbiased <-  (1+1/(4*(length(nrow(data))-1)))*duration_cv
-        # }
-        
-        
-        
-        ### end recurrence ugof
         results_rhythm[a, 9] <<- m_ugof_beat_1
         results_rhythm[a, 10] <<-
           pmin(m_ugof_beat_1, 1 - m_ugof_beat_1)
@@ -1091,71 +987,7 @@ server <- function(input, output) {
               ugof_value_beat_2
             ) - 1))) * ugof_fft_cv
           
-          ### recurrence ugof fft -------------
-          
-          output$rec_ugof_fft_plots <- renderUI({
-            plot_output_list <- lapply(1:length(list_of_files), function(i) {
-              plotname <- paste("ugof_fft_plot", i, sep = "")
-              plotlyOutput(plotname, height = 300, width = 300)
-            }) # end lapply
-            
-            do.call(tagList, plot_output_list)
-          })
-          
-          local({
-            eucl_dist_ugof <-
-              (as.matrix(
-                vegdist(ugof_value_beat_2, "euclidean", na.rm = TRUE)
-              ))
-            eucl_dist_ugof <-
-              eucl_dist_ugof[1:(nrow(eucl_dist_ugof) - 1), 1:(nrow(eucl_dist_ugof) -
-                                                                1)]
-            
-            threshold <-
-              mean(ugof_value_beat, na.rm = TRUE) * 0.1 # as input?
-            
-            eucl_dist_ugof[eucl_dist_ugof < threshold] <- 0
-            
-            # transform matrix as to be able to plot it with ggplot as tile plot
-            #https://stackoverflow.com/questions/14290364/heatmap-with-values-ggplot2
-            
-            levels <- 1:(nrow(eucl_dist_ugof))
-            
-            eucl_dist_ugof_2 <- eucl_dist_ugof %>%
-              tibble::as_tibble() %>%
-              rownames_to_column('Var1') %>%
-              gather(Var2, value,-Var1) %>%
-              mutate(
-                Var1 = factor(Var1, levels = levels),
-                Var2 = factor(gsub("V", "", Var2), levels = levels)
-              )
-            
-            my_i <- a
-            plotname <- paste("ugof_fft_plot", my_i, sep = "")
-            
-            output[[plotname]] <- renderPlotly({
-              rec_plot_ugof <- ggplot(eucl_dist_ugof_2, aes(Var1, Var2)) +
-                geom_tile(aes(fill = value)) +
-                # geom_text(aes(label = round(value, 1))) +
-                scale_fill_gradient(low = "white", high = "black") +
-                xlab("#ugof") +
-                ylab("#ugof") +
-                coord_fixed(ratio = 1) +
-                ggtitle(paste("ugof fft,File:", results_rhythm$filename[my_i])) +
-                theme_minimal() +
-                theme(
-                  plot.background = element_rect(fill = "white"),
-                  panel.grid = element_blank(),
-                  title = element_text(size = 6)
-                )
-              
-              rec_plot_ugof <- ggplotly(rec_plot_ugof)
-              
-              rec_plot_ugof
-              
-            }) # end renderPlotly
-          }) # end local
-          ### end recurrence plot fft ugof
+## results fft ugof
           
           
           results_rhythm[a, 13] <<- m_ugof_beat_2
@@ -1287,19 +1119,6 @@ server <- function(input, output) {
       elements <- str_c(elementlist, collapse = "")
       elements_raw <- elements_seq
       
-      # if("X3" %in% colnames(data) == FALSE) {
-      # 
-      # elements <- "all"
-      # elements_raw <- NA
-      # 
-      # } else if ("X3" %in% colnames(data) == TRUE) {
-      # 
-      # elements_raw <- elements_seq} else {
-      # 
-      # elements <- str_c(elementlist, collapse = " ")
-      # elements_raw <- elements_seq
-      # 
-      # }
       
       fs <- input$fs
       savename <- input$savename
@@ -1362,19 +1181,19 @@ server <- function(input, output) {
   
   #04d: Reset Button -------------
   
-  observeEvent(input$resetAll, {
-    reset("fs")
-    reset("savename")
-    reset("goButton_1")
-    reset("table_ioi")
-    
-    rm(results_rhythm)
-    
-    output$table_ioi <- renderTable({
-      results_rhythm
-      
-    }) #end renderTable
-  }) # end resetAll
+  # observeEvent(input$resetAll, {
+  #   reset("fs")
+  #   reset("savename")
+  #   reset("goButton_1")
+  #   reset("table_ioi")
+  #   
+  #   rm(results_rhythm)
+  #   
+  #   output$table_ioi <- renderTable({
+  #     results_rhythm
+  #     
+  #   }) #end renderTable
+  # }) # end resetAll
   
   
  # }) #end observeEvent reset
