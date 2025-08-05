@@ -95,7 +95,7 @@ ui <- fluidPage(
                               numericInput("n_random_pairs", "Number of random pairs (if applicable)",
                                            value = 20, min = 20),
                               numericInput("seed", "Random seed (for reproducibility)", value = 123, min = 1),
-                              numericInput("fs", "Sampling Rate (FS) for Fourier Analysis", min = 10, max = 1000, value = 20)
+                              #numericInput("fs", "Sampling Rate (FS) for Fourier Analysis", min = 10, max = 1000, value = 20)
                           )
                    ),
                    
@@ -109,7 +109,7 @@ ui <- fluidPage(
                               textInput("sep_input", "Separator", value = ","),
                               actionButton("check_button", "Check"),
                               verbatimTextOutput("file_preview"),
-                              textInput("savename", "ID for saving (e.g., test_species)", value = "")
+                              textInput("savename", "ID for saving (e.g., test_species)", value = "default01")
                           )
                    ),
                    

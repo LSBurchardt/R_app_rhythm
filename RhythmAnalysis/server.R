@@ -71,21 +71,13 @@ server <- function(input, output) {
   ## 04b: choosing data to analyse  -------------------
   
   # File extension, Textoutput which file extension was chosen
-  pattern <- reactive({
-    input$fileextension
-  })
-  
-  output$files <- renderText({
-    paste("You chose the following file extension pattern of the input data",
-          pattern(),
-          ".")
-  })
+  #pattern <- "csv"
   
   # Directory and Files,
   observe({
     if (input$goButton_1 > 0) {
       path <<- choose.dir()
-      pattern <<- pattern()
+      pattern <<- 'csv'
       list_of_files <<- list.files(path = path, pattern = pattern)
       
       output$list_files <- renderTable({
@@ -105,6 +97,14 @@ server <- function(input, output) {
   ## 04c: Check if Files are read correctly -----
   
   observeEvent(input$check_button, {
+    req(input$savename)  # Make sure a save name is provided
+    
+    # Define and create the save path
+    save_path <- file.path("plots_app", input$savename)
+    if (!dir.exists(save_path)) {
+      dir.create(save_path, recursive = TRUE)
+    }
+    
     req(length(list_of_files) > 0)
     req(input$sep_input)
     
@@ -132,10 +132,13 @@ server <- function(input, output) {
   })
   
   output$element_checkboxes <- renderUI({
-    checkboxGroupInput("element_extra_list",
-                       label = "Select additional elements:",
-                       choices = letters[11:26],  # k–z
-                       selected = NULL)
+    checkboxGroupInput(
+      "element_extra_list",
+      label = "Select additional elements:",
+      choices = letters[11:26],
+      # k–z
+      selected = NULL
+    )
   })
   
   
@@ -184,43 +187,16 @@ server <- function(input, output) {
         sepa <- input$sep_input
         
         #if (input$fileextension == 'csv') {
-          data <-
-            readr::read_delim(
-              paste(path, list_of_files[a], sep = "\\"),
-              delim  = sepa ,
-              col_names = colnames
-            )
-          colnames(data) <- c("X1", "X2", "X3")
-          #colnames(data) <- c("X1", "X2", "X3", "X4")
-          data <-
-            data %>%  select(X1, X2, X3) # only short fix for things with 4 columns (i.e. doreco data word level (then also add X4 for selction here) or zf shared)
-        # } else if (input$fileextension == "xls") {
-        #  data <-
-        #    read_xls(
-        #      paste(path, list_of_files[a], sep = "\\"),
-        #      sheet = 1,
-        #      col_names = colnames
-        #    )
-        #  colnames(data) <- c("X1", "X2", "X3")
-        # } else if (input$fileextension == "xlsx") {
-        #  data <-
-        #    read.xlsx(
-        #      paste(path, list_of_files[a], sep = "\\"),
-        #      sheet = 1,
-        #      colNames = colnames
-        #    )
-        # 
-        #  if (nrow(data) == 3) {
-        #    colnames(data) <- c("X1", "X2", "X3")
-        #  } else if (nrow(data) == 2) {
-        #    colnames(data) <- c("X1", "X2")
-        #  } else if (nrow(data) == 1) {
-        #    colnames(data) <- c("X1")
-        #  }
-        # 
-        # } else {
-        #  NULL
-        # }
+        data <-
+          readr::read_delim(
+            paste(path, list_of_files[a], sep = "\\"),
+            delim  = sepa ,
+            col_names = colnames
+          )
+        colnames(data) <- c("X1", "X2", "X3")
+        #colnames(data) <- c("X1", "X2", "X3", "X4")
+        data <-
+          data %>%  select(X1, X2, X3) # only short fix for things with 4 columns (i.e. doreco data word level (then also add X4 for selction here) or zf shared)
         
         if (nrow(data) <= 2) {
           results_rhythm[a, 1] <<- a
@@ -246,7 +222,7 @@ server <- function(input, output) {
         }) #end renderText
         
         ### subset for element types -----------
-       
+        
         
         if ("X3" %in% colnames(data)) {
           # 1. Collect fixed checkboxes (a–j)
@@ -337,36 +313,36 @@ server <- function(input, output) {
         #transforming iois to degrees and radians based on ioi_beat for circular statistics
         # looping through calculated iois
         
-       # # Function to convert degrees to radians
-      #  deg_to_rad <- function(degrees) {
-       #   return(degrees * pi / 180)
+        # # Function to convert degrees to radians
+        #  deg_to_rad <- function(degrees) {
+        #   return(degrees * pi / 180)
         #}
         #reference <-
         #  1 / get(input$method)(ioi$X1, na.rm = TRUE) #something wrong here, reference does not seem to work
         
-      #  for (x in 1:nrow(ioi)) {
-      #    ioi[x, 2] <- ioi[x, 1] / reference * 360
-      #    ioi[x, 3] <- deg_to_rad(ioi[x, 2])
-      #    
-      #    # Add filename and reference columns
-      #    ioi[x, 4] <- list_of_files[a]  # filename
-      #    ioi[x, 5] <- reference          # reference
-      #    
-      #  }
-        # 
+        #  for (x in 1:nrow(ioi)) {
+        #    ioi[x, 2] <- ioi[x, 1] / reference * 360
+        #    ioi[x, 3] <- deg_to_rad(ioi[x, 2])
+        #
+        #    # Add filename and reference columns
+        #    ioi[x, 4] <- list_of_files[a]  # filename
+        #    ioi[x, 5] <- reference          # reference
+        #
+        #  }
+        #
         # deg_to_rad <- function(degrees) {
         #   return(degrees * pi / 180)
         # }
         
-        # reference is frequency in Hz (beats per second)
-        reference_freq <- round(get(input$method)(ioi$X1, na.rm = TRUE), digits = 3)  # Hz
+        
+        
         # reference_period <- 1 / reference_freq  # seconds per beat
-        # 
+        #
         # for (x in 1:nrow(ioi)) {
         #   phase_fraction <- ioi[x, 1] / reference_period
         #   angle_deg <- (phase_fraction * 360) %% 360
         #   angle_rad <- deg_to_rad(angle_deg)
-        #   
+        #
         #   ioi[x, 2] <- angle_deg
         #   ioi[x, 3] <- angle_rad
         #   ioi[x, 4] <- list_of_files[a]  # filename
@@ -374,30 +350,30 @@ server <- function(input, output) {
         # }
         
         for (x in 1:nrow(ioi)) {
-        ioi[x, 2] <- list_of_files[a]  # filename
-        ioi[x, 3] <- reference_freq    # frequency in Hz
+          ioi[x, 2] <- list_of_files[a]  # filename
+          ioi[x, 3] <- ioi_beat    # frequency in Hz
         }
         
         colnames(ioi) <-
           c("ioi",
             "filename",
             "reference_beat")
-          # c("ioi",
-          #   "degree",
-          #   "radians",
-          #   "filename",
-          #   "reference_beat")
+        # c("ioi",
+        #   "degree",
+        #   "radians",
+        #   "filename",
+        #   "reference_beat")
         
         #add parameters to results
-        results_rhythm[a, 1] <<- a
-        results_rhythm[a, 2] <<- ioi_beat
-        results_rhythm[a, 3] <<- ioi_cv_unbiased
+        #results_rhythm[a, 1] <<- a
+        #results_rhythm[a, 2] <<- ioi_beat
+        #results_rhythm[a, 3] <<- ioi_cv_unbiased
         ioi_all[[a]] <<- ioi
         
         ### integer ratio calculations ----
         # based on ioi, which is calculated per sequence
         
-        ioi_vec <- ioi$ioi  # 
+        ioi_vec <- ioi$ioi  #
         
         integer_r <- compute_integer_ratios(
           ioi_vec = ioi_vec,
@@ -406,12 +382,14 @@ server <- function(input, output) {
           seed = input$seed
         )
         
-        integer_r$file <- list_of_files[a]  # Add filename to integer ratios
-        ir_all[[a]] <<- integer_r           # combining all integer ratios, calcualted per file in a list
+        integer_r$file <-
+          list_of_files[a]  # Add filename to integer ratios
+        ir_all[[a]] <<-
+          integer_r           # combining all integer ratios, calcualted per file in a list
         
         ### plot Beats ------------
         output$plot_beat <- renderPlotly({
-          p <- ggplot(data = results_rhythm,) +
+          p <- ggplot(data = results_rhythm, ) +
             geom_jitter(
               aes(
                 x = "IOI",
@@ -421,18 +399,17 @@ server <- function(input, output) {
               width = 0.1,
               alpha = 0.8
             ) +
-            geom_jitter(aes(
-              x = "Fourier",
-              y = fourier_beat,
-              color = filename
-            ),
-            width = 0.1,
-            ) +
+            # geom_jitter(aes(
+            #   x = "Fourier",
+            #   y = fourier_beat,
+            #   color = filename
+            # ),
+            # width = 0.1,) +
             ylab("Beat [Hz]") +
             xlab("Beat Parameter") +
             theme_minimal() +
-            ggtitle("Beat Results in Hertz") +
-            ylim(0, input$fs / 2)
+            ggtitle("Beat Results in Hertz") #+
+            #ylim(0, input$fs / 2)
           
           saveRDS(p, file.path(save_path, "plot_ioi_beat.rds"))
           
@@ -447,22 +424,22 @@ server <- function(input, output) {
           p <- ggplot(data = results_rhythm) +
             geom_jitter(
               aes(
-                x = "IOI ugof",
+                x = "Beat Precision IOI",
                 y = ugof_ioi,
                 color = filename
               ),
               width = 0.1,
               alpha = 0.8
             ) +
-            geom_jitter(
-              aes(
-                x = "Fourier ugof",
-                y = ugof_fft,
-                color = filename
-              ),
-              width = 0.1,
-              alpha = 0.8
-            ) +
+            # geom_jitter(
+            #   aes(
+            #     x = "Fourier ugof",
+            #     y = ugof_fft,
+            #     color = filename
+            #   ),
+            #   width = 0.1,
+            #   alpha = 0.8
+            # ) +
             geom_jitter(
               aes(
                 x = "Coefficient of Variation",
@@ -559,7 +536,7 @@ server <- function(input, output) {
           p <- ir_all %>%
             ggplot(aes(x = ratio)) +
             geom_density() +
-            geom_density(aes(color = adjacent))+
+            geom_density(aes(color = adjacent)) +
             coord_cartesian(xlim = c(0, 1)) +
             theme_minimal() +
             xlab("Integer Ratios") +
@@ -614,7 +591,7 @@ server <- function(input, output) {
         
         npvi <- c * (100 / (length(z) - 1))
         
-        results_rhythm[a, 4] <<- npvi
+        #results_rhythm[a, 4] <<- npvi
         
         ## end npvi
         
@@ -624,32 +601,32 @@ server <- function(input, output) {
         
         #transform time labels to binary sequence for Fourier analysis
         
-        event_timepoint <- vector(length = nrow(data))
-        event_timepoint <- data [, 1]
-        
-        event_timepoint_fs <-
-          round(event_timepoint * input$fs) # index of events with fs chosen in interface
-        
-        event_timepoint_fs <- as.data.frame(event_timepoint_fs)
-        
-        binarydata <<-
-          data.frame(matrix(
-            ncol = 1,
-            nrow = max(event_timepoint_fs),
-            0
-          ))
-        colnames(binarydata) <<- c('timeseries')
-        
-        for (l in 1:max(event_timepoint_fs)) {
-          for (i in 1:nrow(event_timepoint_fs)) {
-            if (l == event_timepoint_fs[i, 1]) {
-              binarydata[l, 1] <<- 1
-              
-            }         # end of if
-            
-          }          # end of for loop i
-          
-        }           #end of for loop l
+        # event_timepoint <- vector(length = nrow(data))
+        # event_timepoint <- data [, 1]
+        # 
+        # event_timepoint_fs <-
+        #   round(event_timepoint * input$fs) # index of events with fs chosen in interface
+        # 
+        # event_timepoint_fs <- as.data.frame(event_timepoint_fs)
+        # 
+        # binarydata <<-
+        #   data.frame(matrix(
+        #     ncol = 1,
+        #     nrow = max(event_timepoint_fs),
+        #     0
+        #   ))
+        # colnames(binarydata) <<- c('timeseries')
+        # 
+        # for (l in 1:max(event_timepoint_fs)) {
+        #   for (i in 1:nrow(event_timepoint_fs)) {
+        #     if (l == event_timepoint_fs[i, 1]) {
+        #       binarydata[l, 1] <<- 1
+        #       
+        #     }         # end of if
+        #     
+        #   }          # end of for loop i
+        #   
+        # }           #end of for loop l
         
         ### end binary
         
@@ -657,68 +634,68 @@ server <- function(input, output) {
         
         #https://statisticsglobe.com/find-index-positions-non-zero-values-matrix-r
         
-        k <-
-          which(binarydata != 0, arr.ind = T)   # find outputs all values unequal zero -> finds all 1's, saves indices in k
-        X <-
-          binarydata$timeseries[min(k[, 1]):max(k[, 1])]             # X in binary data cut to start and end with 1
-        L <-
-          length(X)                               # length of actual signal
-        kk <-
-          nrow(k)                                #number of elements in sequence! save!
-        
-        fs <- input$fs
-        X <- 1 / L * SynchWave::fftshift(fft(X, L))
-        df <-
-          fs / L                             #frequency resolution
-        sample_index <-
-          (-L / 2):(L / 2 - 1)         #ordered index for FFT plot
-        f <- sample_index * df
-        
-        index_0 <-
-          which.min(abs(f - 0))      #index where f is zero to select only positive fs
-        X <-
-          X[(index_0 - 1):length(X)]   # select only amplitudes for positive fs
-        f <-
-          f[(index_0 - 1):length(f)]   # select only positive fs
-        
-        # https://stackoverflow.com/questions/14968954/return-index-from-a-vector-of-the-value-closest-to-a-given-element
-        # https://www.oreilly.com/library/view/the-r-book/9780470510247/ch002-sec020.html
-        
-        
-        # find peaks in fft signal
-        
-        peaks <-
-          findpeaks(abs(X), npeaks = 11, sortstr = TRUE) #sortstr = TRUE so that it is sorted decreasing as need and as done in matlab
-        peaks <-
-          peaks %>%      # column 1: amplitude/peak height, column 2: index, column 3 and 4 start and end of peak, delted, because we do not need it
-          as.data.frame() %>%
-          select(V1, V2)
-        
-        colnames(peaks) <- c("amplitude", "index")
-        
-        # we know amplitude and index but not yet the corresponding frequency
-        # we now need to couple index with corresponding frequency from f
-        
-        # f at indexes in peaks$index
-        peak_freq <- f[peaks$index]
-        # add frequency to the amplitude dataframe
-        peaks[, "freq"] <- peak_freq
-        
-        #Account for shift in zero-bin component
-        
-        if (peaks[1, 3] != 0) {
-          peaks$freq <- peaks$freq - peaks$freq[1]
-          
-        }
+        # k <-
+        #   which(binarydata != 0, arr.ind = T)   # find outputs all values unequal zero -> finds all 1's, saves indices in k
+        # X <-
+        #   binarydata$timeseries[min(k[, 1]):max(k[, 1])]             # X in binary data cut to start and end with 1
+        # L <-
+        #   length(X)                               # length of actual signal
+        # kk <-
+        #   nrow(k)                                #number of elements in sequence! save!
+        # 
+        # fs <- input$fs
+        # X <- 1 / L * SynchWave::fftshift(fft(X, L))
+        # df <-
+        #   fs / L                             #frequency resolution
+        # sample_index <-
+        #   (-L / 2):(L / 2 - 1)         #ordered index for FFT plot
+        # f <- sample_index * df
+        # 
+        # index_0 <-
+        #   which.min(abs(f - 0))      #index where f is zero to select only positive fs
+        # X <-
+        #   X[(index_0 - 1):length(X)]   # select only amplitudes for positive fs
+        # f <-
+        #   f[(index_0 - 1):length(f)]   # select only positive fs
+        # 
+        # # https://stackoverflow.com/questions/14968954/return-index-from-a-vector-of-the-value-closest-to-a-given-element
+        # # https://www.oreilly.com/library/view/the-r-book/9780470510247/ch002-sec020.html
+        # 
+        # 
+        # # find peaks in fft signal
+        # 
+        # peaks <-
+        #   findpeaks(abs(X), npeaks = 11, sortstr = TRUE) #sortstr = TRUE so that it is sorted decreasing as need and as done in matlab
+        # peaks <-
+        #   peaks %>%      # column 1: amplitude/peak height, column 2: index, column 3 and 4 start and end of peak, delted, because we do not need it
+        #   as.data.frame() %>%
+        #   select(V1, V2)
+        # 
+        # colnames(peaks) <- c("amplitude", "index")
+        # 
+        # # we know amplitude and index but not yet the corresponding frequency
+        # # we now need to couple index with corresponding frequency from f
+        # 
+        # # f at indexes in peaks$index
+        # peak_freq <- f[peaks$index]
+        # # add frequency to the amplitude dataframe
+        # peaks[, "freq"] <- peak_freq
+        # 
+        # #Account for shift in zero-bin component
+        # 
+        # if (peaks[1, 3] != 0) {
+        #   peaks$freq <- peaks$freq - peaks$freq[1]
+        #   
+        # }
         
         #save data
         
-        results_rhythm[a, 5] <<- peaks$freq[2] # fourier beat
-        results_rhythm[a, 6] <<-
-          df            # frequency resolution
-        results_rhythm[a, 7] <<-
-          kk            # number of elements
-        results_rhythm[a, 8] <<- L             # length of signal
+        #results_rhythm[a, 5] <<- peaks$freq[2] # fourier beat
+        #results_rhythm[a, 6] <<-
+        #  df            # frequency resolution
+        #results_rhythm[a, 7] <<-
+        #  kk            # number of elements
+        #results_rhythm[a, 8] <<- L             # length of signal
         
         ### end fourier calc
         ## end fourier
@@ -730,9 +707,9 @@ server <- function(input, output) {
         data_ugof <-
           data$X1             # taking start times of elements for onset analysis
         beat_ioi <- results_rhythm[a, 2]
-        beat_fft <- results_rhythm[a, 5]
+        #beat_fft <- results_rhythm[a, 5]
         
-        timesteps <- 1000 / round(beat_ioi, digits = 1)
+        timesteps <- 1000 / round(ioi_beat, digits = 2)
         
         ### phase shift -----
         
@@ -916,103 +893,6 @@ server <- function(input, output) {
             ugof_value_beat
           ) - 1))) * ugof_ioi_cv
         
-        results_rhythm[a, 9] <<- m_ugof_beat_1
-        results_rhythm[a, 10] <<-
-          pmin(m_ugof_beat_1, 1 - m_ugof_beat_1)
-        results_rhythm[a, 11] <<- mean(min_value, na.rm = TRUE)
-        silent_beat_ioi <- nrow(theotime_seq) - kk
-        results_rhythm[a, 12] <<- silent_beat_ioi
-        
-        ### ugof Fourier --------------
-        
-        if (is.na(beat_fft) == FALSE) {
-          timesteps_2 <- 1000 / round(beat_fft, digits = 1)
-          count_2 <- 0
-          theotime_value_2 <- 0
-          theotime_seq_2 <- data.frame()
-          
-          while (theotime_value_2 < maxoriginal) {
-            count_2 <- count_2 + 1
-            
-            theotime_value_2 <- count_2 * timesteps_2 / 1000
-            
-            theotime_seq_2[count_2, 1] <- theotime_value_2
-            
-          }
-          
-          # match original sequence to theoretical timeseries and calculate actual deviation
-          
-          x_2 <- length(data_ugof)
-          min_value_2 <- c(1:x)
-          ugof_value_beat_2 <- c()
-          
-          for (n in 1:x) {
-            min_value_2[n] <- min(abs(data_ugof[n] - theotime_seq_2))
-          }
-          
-          # calculate ugof for Fourier beat
-          
-          maxdev_2 <- timesteps_2 / 2 / 1000
-          
-          
-          ugof_value_beat_2 <- min_value_2 / maxdev_2
-          
-          
-          m_ugof_beat_2 <-
-            median(ugof_value_beat_2[2:length(ugof_value_beat_2)])
-          
-          
-          ### calculate npvi of ugof values of fourier beat
-          z <- c()
-          b <- c()
-          
-          for (l in 1:length(ugof_value_beat_2)) {
-            z[l] <- (ugof_value_beat_2[l] - ugof_value_beat_2[l + 1])
-            b[l] <-
-              (ugof_value_beat_2[l] + ugof_value_beat_2[l + 1]) / 2
-            
-          } #end of for loop
-          
-          z <- na.omit(z)
-          b <- na.omit(b)
-          c <- sum(abs(z / b))
-          
-          npvi_ugof_fft <- c * (100 / (length(z) - 1))
-          ### calculate cv of ugof values of fourier beat
-          
-          ugof_fft_cv <-
-            sd(ugof_value_beat, na.rm = TRUE) / mean(ugof_value_beat_2, na.rm = TRUE)
-          ugof_fft_cv_unbiased <-
-            (1 + 1 / (4 * (length(
-              ugof_value_beat_2
-            ) - 1))) * ugof_fft_cv
-          
-## results fft ugof
-          
-          
-          results_rhythm[a, 13] <<- m_ugof_beat_2
-          results_rhythm[a, 14] <<-
-            mean(min_value_2, na.rm = TRUE)
-          silent_beat_fft <- nrow(theotime_seq_2) - kk
-          
-          results_rhythm[a, 15] <<- silent_beat_fft
-        } else {
-          results_rhythm[a, 13] <<- NA
-          results_rhythm[a, 14] <<- NA
-          results_rhythm[a, 15] <<- NA
-          
-        }
-        
-        results_rhythm[a, 16] <<- npvi_ugof_ioi
-        results_rhythm[a, 17] <<- ugof_ioi_cv_unbiased
-        results_rhythm[a, 18] <<- npvi_ugof_fft
-        results_rhythm[a, 19] <<- ugof_fft_cv_unbiased
-        
-        # if(ncol(data) == 4){
-        #   results_rhythm[a,19] <<- duration_cv_unbiased
-        # }
-        
-        ## end ugof
         
         ## recurrence plot -------
         
@@ -1064,7 +944,7 @@ server <- function(input, output) {
           eucl_dist_2 <- eucl_dist %>%
             tibble::as_tibble() %>%
             rownames_to_column('Var1') %>%
-            gather(Var2, value,-Var1) %>%
+            gather(Var2, value, -Var1) %>%
             mutate(
               Var1 = factor(Var1, levels = levels),
               Var2 = factor(gsub("V", "", Var2), levels = levels)
@@ -1101,18 +981,37 @@ server <- function(input, output) {
         
         ## end if recurrence plot
         
+        # 06: Plots ------
+        # 07: Results -------
+        
+        
+        ## 07a: collecting all numeric results of loop run a ---------
+        
+        results_rhythm[a, 1] <<- a
+        results_rhythm[a, 2] <<- ioi_beat
+        results_rhythm[a, 3] <<- ioi_cv_unbiased
+        results_rhythm[a, 4] <<- npvi
+        #fft results
+        #results_rhythm[a, 5] <<- peaks$freq[2] # fourier beat
+        #results_rhythm[a, 6] <<-
+        #  df            # frequency resolution
+        #results_rhythm[a, 7] <<-
+        #  kk            # number of elements
+        #results_rhythm[a, 8] <<- L             # length of signal
+        results_rhythm[a, 5] <<- m_ugof_beat_1
+        #results_rhythm[a, 10] <<-
+        #  pmin(m_ugof_beat_1, 1 - m_ugof_beat_1)
+        #results_rhythm[a, 11] <<- mean(min_value, na.rm = TRUE)
+        silent_beat_ioi <- nrow(theotime_seq) - kk
+        results_rhythm[a, 6] <<- silent_beat_ioi
+        results_rhythm[a, 7] <<- npvi_ugof_ioi
+        results_rhythm[a, 8] <<- ugof_ioi_cv_unbiased
+        
+        
+      } # end of loop through files
       
       
-    } # end if input$goButton_2
-      
-      #} #end of input$all == TRUE
-      
-      
-      # 04 c: phase shift plot -----
-      
-      
-      
-      # 04c: Standard results details ----------
+      ## 7b: results meta data -----
       
       filenames <- as.data.frame(list_of_files)
       
@@ -1120,44 +1019,31 @@ server <- function(input, output) {
       elements_raw <- elements_seq
       
       
-      fs <- input$fs
+      #fs <- input$fs
       savename <- input$savename
       averaging <- input$method
       
-      
+      # combine numeric results with method input, filenames etc.
       results_rhythm <<-
         cbind(results_rhythm,
-              fs,
+              #fs,
               averaging,
               elements,
               elements_raw,
               filenames,
               savename)
       
-      #if (nrow(data) == 3){
-      
+      # write column names to complete results table
       colnames(results_rhythm) <<-
         c(
           "index",
           "ioi_beat",
           "unbiased_cv",
           "npvi",
-          "fourier_beat",
-          "freq_reso",
-          "n_elements",
-          "signal_length",
           "ugof_ioi",
-          "ugof_sym_ioi",
-          "mean_min_dev_ioi",
           "silent_beats_ioi",
-          "ugof_fft",
-          "mean_min_dev_fft",
-          "silent_beats_fft",
           "npvi_ugof_ioi",
           "cv_ugof_ioi",
-          "npvi_ugof_fft",
-          "cv_ugof_fft",
-          "fs",
           "averaging",
           "elements",
           "raw_element_seq",
@@ -1165,106 +1051,98 @@ server <- function(input, output) {
           "savename"
         )
       #}
-    } #end for loop through list_of_files
-          
-    })  #end of observer results
+    } #end of inpit button_2 (GO Button)
+    
+  })  #end of observer results
   
+  ## 07c: render results table -----
   
   output$table_ioi <- renderTable({
     results_rhythm
     
   })
   
-  output$calc <- renderText({
-    paste("Once the results are done, they will appeare here. The results are:")
+  # output$calc <- renderText({
+  #    paste("Once the results are done, they will appeare here. The results are:")
+  #  })
+  
+  
+  
+  # 08: Downloads --------------
+  
+  ## Dataset Results----------
+  datasetInput <- reactive({
+    results_rhythm
+    
   })
   
-  #04d: Reset Button -------------
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste(
+        "rhythm_analysis_",
+        input$method,
+        "_",
+        input$savename,
+        #"_fs_",
+        #input$fs,
+        ".csv",
+        sep = ""
+      )
+    },
+    content = function(file) {
+      write.csv(datasetInput(), file, row.names = FALSE)
+    }
+  )
   
-  # observeEvent(input$resetAll, {
-  #   reset("fs")
-  #   reset("savename")
-  #   reset("goButton_1")
-  #   reset("table_ioi")
-  #   
-  #   rm(results_rhythm)
-  #   
-  #   output$table_ioi <- renderTable({
-  #     results_rhythm
-  #     
-  #   }) #end renderTable
-  # }) # end resetAll
+  ## IOIs ----------
+  
+  output$downloadData_ioi <- downloadHandler(
+    filename = function() {
+      paste0("iois_", input$savename, ".csv")
+    },
+    content = function(file) {
+      write.csv(ioi_all, file, row.names = FALSE)
+    }
+  )
+  
+  ## integer ratios ----
+  
+  output$downloadData_ir <- downloadHandler(
+    filename = function() {
+      paste("integer_ratios_raw", input$savename, ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(ir_all, file, row.names = FALSE)
+    }
+  )
+  
+  ## raw deviations - beat precision -----
+  
+  output$downloadData_rawdev <- downloadHandler(
+    filename = function() {
+      paste0("raw_deviations_", input$savename, ".csv")
+    },
+    content = function(file) {
+      write.csv(raw_deviations_bp, file, row.names = FALSE)
+    }
+  )
   
   
- # }) #end observeEvent reset
-
-
-
-# 04g: Download Results --------------
-
-## Dataset Results----------
-datasetInput <- reactive({
   
-  results_rhythm
+  # Help Tab ----
   
-})
-
-output$downloadData <- downloadHandler(
-  filename = function(){
-    paste("rhythm_analysis_",input$method,"_", input$savename,"_fs_",input$fs,".csv", sep = "")
-  },
-  content = function(file){
-    write.csv(datasetInput(), file, row.names = FALSE)
-  }
-)
-
-## IOIs ----------
-
-output$downloadData_ioi <- downloadHandler(
-  filename = function() {
-    paste0("iois_", input$savename, ".csv")
-  },
-  content = function(file) {
-    write.csv(ioi_all, file, row.names = FALSE)
-  }
-)
-
-## integer ratios ----
-
-output$downloadData_ir <- downloadHandler(
-  filename = function(){
-    paste("integer_ratios_raw", input$savename,".csv", sep = "")
-  },
-  content = function(file){
-    write.csv(ir_all, file, row.names = FALSE)
-  }
-)
-
-## raw deviations - beat precision -----
-
-output$downloadData_rawdev <- downloadHandler(
-  filename = function() {
-    paste0("raw_deviations_", input$savename, ".csv")
-  },
-  content = function(file) {
-    write.csv(raw_deviations_bp, file, row.names = FALSE)
-  }
-)
-
-
-
-# Help Tab ----
-
-output$info <- renderUI({
-  HTML(paste(
-    'For more information, see <a href="manual.pdf" target="_blank">this PDF Manual</a>.',
-    "<b>Important Remarks:</b>",
-    "1) The input range for the phase shift is 0.001 seconds to 10 seconds.",
-    "2) Once the calculations are finished, go to any of the other tabs ('Simple Parameters' or 'Rhythm Analysis') to see the results and to be able to download the results tables.",
-    "3) The plots (all but recurrence plots) are saved in the plot folder automatically.",
-    sep = "<br/>"
-  ))
-})
-
-
+  output$info <- renderUI({
+    HTML(
+      paste(
+        'For more information, see <a href="manual.pdf" target="_blank">this PDF Manual</a>.',
+        "<b>Important Remarks:</b>",
+        "1) The input range for the phase shift is 0.001 seconds to 10 seconds.",
+        "2) Once the calculations are finished, go to any of the other tabs ('Simple Parameters' or 'Rhythm Analysis') to see the results and to be able to download the results tables.",
+        "3) The plots (all but recurrence plots) are saved in the plot folder automatically.",
+        sep = "<br/>"
+      )
+    )
+  })
+  
+  
 } #end server function
