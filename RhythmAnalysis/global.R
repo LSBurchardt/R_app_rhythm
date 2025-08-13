@@ -53,6 +53,7 @@ elements_seq <<- c()
 all_rmsd_data <<- list()
 
 source("R/find_best_phase_shift.R", local = TRUE)
+source("R/compute_integer_ratios.R", local = TRUE)
 # 03: define ui --------------------------------------------------------------
 
 #defined in ui.R

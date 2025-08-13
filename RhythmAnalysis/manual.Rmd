@@ -1,0 +1,287 @@
+---
+title: "Manual Rhythm Analysis App"
+author: "Dr. Lara S. Burchardt"
+date: "3/14/2022"
+
+#header-includes: # this should work to include latex packages with \usepackage I get an error though that pdflatex: major issue: Benutzer/Administrator-Updates sind nicht synchron...
+
+output:
+  pdf_document:
+    highlight: default
+    number_sections: true
+    toc: yes
+    toc_depth: 3
+    #latex_engine: xelatex
+  html_document:
+    number_sections: true
+    theme: cosmo
+    highlight: monochrome
+    toc: yes
+    toc_depth: 3
+urlcolor: blue
+---
+
+\renewcommand{\familydefault}{\sfdefault} <!-- this is to set the font family to sans serif, works only on headings here for some reason --> 
+\sffamily <!-- this is to set the font family to sans serif for the main text after this command --> 
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+This is the manual for the shiny application "RANTO - Rhythm ANalysis TOol for Timeseries". The following section will guide you through the first steps and will show you, how to work with the app.
+
+The [code](https://github.com/LSBurchardt/R_app_rhythm) for the app lies on my github repository.
+
+Who am I? You can find out more about me [here](https://www.researchgate.net/profile/Lara-Burchardt)
+
+## Why use this app?
+
+## A little background
+
+The temporal structure of animal communication is a potentially crucial parameter, that historically was often overlooked, especially in mammals and birds. With the development of new methods in recent years, research on rhythm analysis in animal communication is an ever-growing field, with yet many knowledge gaps: we want to identify the adaptive function of rhythms and add this piece of the puzzle to ongoing discussions about the evolution of language and music. Apart from that, the temporal structure of vocalizations can inform about species identity, communication context, arousal state, health conditions, and many more, which has wide implications for a lot of research fields ranging from behavioral ecology and cognitive science to conversation biology, and animal welfare.  (Anichini et al., 2020; Honing & Ploeger, 2012; Honing et al., 2015; Manser, 2001; Ravignani et al., 2019).  
+
+Different parameters can be measured in the context of rhythm analysis, many of which I studied and developed during my doctoral thesis (Burchardt, Briefer, et al., 2021; Burchardt & Knörnschild, 2020). For example, we can calculate simple distributional parameters, such as mean and coefficient of variation of Inter-Onset-Intervals (IOI), the duration between the start of a sound element in a sequence and the start of the next element in that sequence (Figure 1). A possible next step is to describe a single sequence with one particular rhythm or beat in hertz (Hz). A sequence with a rhythm of 5 Hz would have 5 equally distributed sound elements per second, so roughly one sound element every 200 ms. If it is a perfect fit, it is exactly every 200 ms, but in biological systems such ‘perfection’ seldom happens. Beat precision can then be used to describe how good the fit of the actual elements to the calculated theoretical beat is. I will analyze exact beat frequencies to describe a sequence with the so-called IOI approach (Burchardt & Knörnschild, 2020) and Fourier analysis (Burchardt & Knörnschild, 2020; Burchardt, Picciulin, et al., 2021; Ravignani & Norton, 2017; Saar & Mitra, 2008) and I will use the universal goodness-of-fit value (ugof), which I developed during my doctoral thesis, to determine the beat precision (Figure 1). The striking advantages of the ugof parameter include that it can be calculated independent of the method used to calculate the exact beats; it is independent of the number of elements, the rhythm it is describing, or any other parameter. Other goodness-of-fit values were correlated to i.e., the number of elements or the rhythm they were describing, making them unfit for comparative work or the general description of beat precision. Another important aspect of the ugof parameter is that it can be calculated per sound element and can therefore be investigated on very different levels ranging from single sound elements to long sound sequences. It can be calculated for a single individual, or several individuals of the same species in comparison with another species, making it potentially useful for very different kinds of questions.  
+
+This app calculates the rhythm of a sequence of time points using exactly these methods and parameters. 
+
+![Alt text](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/ugof.JPG)    
+Figure 1: Theoretical Explanation of the universal goodness of fit value. If applicable, please cite [Burchardt et al, 2021](https://doi.org/10.1002/ece3.8417)
+
+
+### Literature
+
+The methods were described and used by me for example in the following peer-reviewed publications:
+
+Methods:
+
+[Paper 1:](https://doi.org/10.1371/journal.pcbi.1007755) "Comparison of methods for rhythm analysis of complex animals’ acoustic signals" by Burchardt & Knörnschild, 2020
+
+[Paper 2:](https://doi.org/10.1002/ece3.8417) "Novel ideas to further expand the applicability of rhythm analysis" by Burchardt, Briefer and Knörnschild, 2021
+
+The code in action: 
+
+[Paper 3:](https://doi.org/10.1002/ece3.7713) "Assessing acoustic competition between sibling frog species using rhythm analysis" by Filer, Burchardt, van Rensburg, 2021
+
+[Paper 4:](https://doi.org/10.1098/rsos.210494) "A primer on rhythm quantification for fish sounds: a Mediterranean case study" by Burchardt, Picciulin, Parmentier and Bolgan, 2021
+
+## Preparations
+
+### Packages
+
+For the app to work a bunch of packages need to be installed.  The app will automatically check, whether all necessary packages are installed on your local machine, and if not, will install them 
+This is an overview of the needed packages, just for your information.  
+
+`install.load` \
+`shiny` \
+`shiny.Files` \
+`shinybusy` \
+`shinyjs` \
+`shinyWidgets` \
+`tidyverse` \
+`readxl` \
+`openxlsx` \
+`svDialogs` \
+`pracma` \
+`SynchWave` \
+`vegan` \
+`corrplot` \
+`plotly` \
+`DT` \
+`scales` \
+
+### Necessary Code on your machine
+
+In the RStudio app, set up new project (`file -> New project`). If you have never used R projects before, see [here](https://support.rstudio.com/hc/en-us/articles/200526207-Using-RStudio-Projects) for a short explanation of the use and advantageous of R Projects. 
+
+You now need to download the code from [github](https://github.com/LSBurchardt/R_app_rhythm) into this project folder. This will ensure, that RStudio can access all necessary files and data without any further steps. 
+
+![Alt text](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/download_code.JPG)
+Figure 2: Screenshot of github page to guide code download. 
+
+On the project webpage, you click the green button "Code" and then choose "Download ZIP" (Figure 1) 
+Actually needed are the following items in the folder:
+
+`global.R` \
+`ui.R` \
+`server.R` \
+`manual.pdf` \
+
+and the folders `www` and  `images_manual`  with all its content. 
+
+Everything, that you save within the app (i.e., data) will also be saved into the project folder. 
+
+# How to use the app?
+
+## How should the input data look like?
+
+The input data needs to include the relevant event time points you want to calculate rhythms for. This could be starting points of sound elements, end points of sound elements, or timepoint with peak energy of sound elements, depending on your data and approach. These timepoints need to be in the first column of a datatable input, that could be in one of the three formats:
+
+ 1. csv
+ 2. xls
+ 3. xlsx
+ 
+You select the input format later in the app through a dropdown menu. 
+The data table can include respective "endpoints" of sound elements, if applicable or element types in a second and third column, but that is not necessary. If you supply element types, it is possible to filter for element types and calculate rhythms element type wise. elements need to be labeled with letters for this to work, up to six element types (a,b,c,d,e,f) can currently be distinguished. <!-- If you supply element types, it is possible to filter for element types and calculate rhythms element type wise. elements need to be labeled with letters for this to work, up to six element types (a,b,c,d,e,f) can currently be distinguished. -->
+ A possible example of an input data table is shown below.
+ 
+ Table 1: Exemplary input data table with timepoints of interest in the first column (here start points), the respective end points and the element type. 
+
+\begin{tabular}{|c|c|c|}
+	\hline
+	start & end & element type\\
+	\hline
+	0.1 & 0.12 & a\\
+	\hline
+	0.2 & 0.23 & a\\
+	\hline
+	0.3 &  0.31 & a\\
+	\hline
+	0.4 &  0.42 & a\\
+	\hline
+	0.5 &  0.51 & a\\
+	\hline
+	0.6 &  0.62 & a\\
+	\hline
+	0.7 &  0.71 & a\\
+	\hline
+	0.8 &  0.82 & a\\
+	\hline
+	0.9 &  0.91 & a\\
+	\hline
+	1 &  1.01 & a\\
+	\hline
+\end{tabular}
+
+<!-- Here you can find further examples of input data. (include link here to github data input example --> 
+
+
+## Starting the app
+
+Before you start the app, your environment should be empty, no datasets should be loaded or values be stored. To make sure it is, run the following code `rm(list = ls)` in the console. WARNING: Only do this, when the respective project is opened! Otherwise you might loose data from other projects, you do not want to remove.   
+
+Open one of the following scripts: `global.R`, `ui.R` or `server.R`. All three scripts together form the app. You can start the app from any of the three files. 
+
+To avoid confusion, it might be easiest to open the `global.R` file, as it is the shortest. Once you open it, on the top right corner you will see the option `Run App` with a green triangle in front of it. If you click on that option, the app will start. 
+
+![Alt text](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/run_app.JPG)
+Figure 3: Where to find the "Run App button" when, i.e. the `global.R` script is opened. 
+
+## Input parameters, Options
+
+When you start the app, a new window will open, that looks like this:
+
+![Alt text](E:\R_App_Rhythm\R projekt\RhythmAnalysis\images_manual\app_empty.JPG)
+
+You can change several inputs.
+1. First of all, you can decide, whether Recurrence Plots should be produced, this is a slightly time consuming task, which is why the option is given not to render them.
+2. The second input is the sampling rate (FS) you want to choose for the Fourier analysis calculations. The default is 200. Note, that frequencies can be decomposed up to half of the sampling rate. So for the default FS of 200 you would analyse the rhythm in a window between 0 and 100 Hz with the Fourier analysis.
+3. As mentioned before, you need to specify the format of your input data. Only one input format can be analysed at a time and you need to specify the correct data type BEFORE choosing the input folder. Changing the format after choosing the input folder will crash the app. 
+4. You can select a savename for your data, that will be included in the filename, when you download the results. A savename is not necessary for the app to work properly, but advised to not confuse or overwrite results by accident. 
+
+Potential issues: 
+Choosing input elements
+-  if you filter element types in a way, that at least one sequence is of length 0, the app will crash
+   corresponding error message --> "Error in :: argument of length 0"
+
+## Choose Data to analyse
+
+After choosing all necessary input arguments, you can click the `Choose folder` button, which will open an explorer window, where you select the folder containing your data in the chosen file format such as `csv`. If there is other files in the same folder, with the same file extension, this will lead to errors, so make sure, to have a designated folder for your data. 
+
+After you chose the folder, the data to be analysed will appear in list form in the `Data` Tab (Figure 4).
+
+![Alt text](E:\R_App_Rhythm\R projekt\RhythmAnalysis\images_manual\data_chosen.JPG)
+
+
+
+click the "GO" Button to run the analyses on the chosen data. If you want to calculate the results with another sampling rate, change the sampling rate and click "Reset FS" to run the calculations again with the new parameter.  
+
+<!--If you want to analyse a different data set with a different file extension, you need to restart the app. The app will crash, when you change the file extension after having run calculations already. -->
+
+
+
+## Analysis and Output
+
+
+All analyses will run automatically and results will appear in the `Results` Tab. Results will be presented in a table. Visualizations will also be generated for the relevant results parameters. 
+
+It will look something like this: 
+
+![Alt text](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/results_exampletable.jpg)
+### Results and Results Table
+
+The following parameters and results are calculated:
+
+1. the IOI beat
+  That is the beat frequency in Hertz, that describes the element sequence best, when using the average IOI duration as the       basis for the rhythm calculation. This method is suitable for many datasets. It is suitable for datasets with a low             variability in IOI duration and a general consistency, i.e. because the sequence is not that long, consists of only the same    element type and the temporal structure is very consistent.   
+2. the unbiased Coefficient of Variation
+  This parameter indicates the variability of IOI durations independent of the sample size and the actual mean it is describing.   The CV sets mean and standard deviation into relation and can be interpreted as a percentage. The higher it is, the higher is   the variability. 
+3. the normalized Pairwise Variability Index (nPVI)
+  Another variability parameter, originating in linguistics. It indicates how well you can predict one IOI by the preceding      IOI. A value of 0 would indicate, that every IOI in a sequence is exactly equal.
+4. the Fourier beat
+  That is the beat frequency in Hertz, that describes the element sequence best, when using Fourier analysis to calculate         rhythm. For that, the sequence is first transformed into a binary sequence with th chosen sampling rate. This binary sequence,   where the points of interest (i.e., start point of a sound element) are coded as 1 and everything is 0, is decomposed into its   sinusoidal components with a fast Fourier transformation. Note, that this calculation is strongly influenced by the frequency   resolution of the Fourier analysis. The temporal resolution, i.e., the sampling rate divided by the sample length gives the     frequency resolution. As a rule of thumb: the longer the signal, the smaller is the problem of a coarse frequency resolution.
+  In case the frequency resolution is higher, than the actual frequency window, that can be depicted (i.e., sampling rate of 20   Hz, resulting in a frequency window up to 10 Hz, but a frequency resolution of 11 HZ) this value will be given as NA (Figure 7)
+  
+  ![Alt text](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/results_exampletable_fourierNA.JPG)
+  
+  
+5. the frequency resolution
+  That is the frequency resolution of the Fourier Beat. This is especially important, of you want to interpret the suitability    of the Fourier approach or compare the IOI beat and the Fourier beat. The IOI beat is a continuous value, the Fourier beat      result can only take multiplies of the frequency resolution. Fourier beats of a sequence with a low (i.e. large number)         frequency resolution are to be treated and interpreted carefully. Ideally, the frequency resolution should be <0.5 Hz. 
+6. the number of elements
+  The number of elements in each sequence is also depicted in the results table.
+7. the signal length
+  That is the signal length of the binary sequence necessary to calculate the Fourier analysis. It depends on the sampling rate   and the total signal duration and influences the frequency resolution.
+8. the universal goodness of fit of the IOI beat
+   That is the value, indicating, how well the IOI beat describes the sequence. It can lie between 0 and 1 and can be              interpreted   as a percentage. The lower it is, the better the fit between theoretical beat and actual sound elements. 
+9. the universal goodness of fit of the Fourier beat
+   That is the same parameter, just calculated for the Fourier beat
+   
+   
+For detailed explanations of the parameters and methods please see: 
+1. [Burchardt & Knörnschild, 2020](https://doi.org/10.1371/journal.pcbi.1007755)
+2. [Burchardt et al, 2021](https://doi.org/10.1002/ece3.8417)
+
+Furthermore shown in the results table are: 
+
+10. the sampling rate
+  The chosen sampling rate is given in the results table. 
+11. the file name
+  The file name of the analysed sequence
+12. a possible save name   
+  If you chose a "savename" in the interface, that will be depicted here as well, for the easier discrimination in possible subsequent analyses. 
+  
+The very first column of the results table just gives an index number, that can be used for subsequent analyses and can be used in this app, to re-analyze certain parts of a certain sequence. 
+
+
+### Results and Visualizations 
+
+
+
+
+<!-- # The different Tabs in detail
+
+## Data
+
+## Results
+
+- silent beats...
+- element sequence/which elements were analysed
+
+## Recurrence Plots
+
+## Re-run analysis on Section
+
+## Beat precision details
+
+## Help
+
+Possible reasons for the app to crash:
+
+Choosing input elements:
+- problems that can arise: if you filter element types in a way, that at least one sequence is of length 0, the app will crash
+
+
+Other issues
+- sometimes results table will not show: try clicking the reset results table button, works in most situations -->
