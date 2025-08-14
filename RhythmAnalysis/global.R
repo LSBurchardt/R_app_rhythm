@@ -48,12 +48,13 @@ install_load("shiny", "shinyFiles","shinybusy", "shinyjs", "shinyWidgets",
 
 results_rhythm <<- data.frame()      # <<- global assignment operator, needs to be used when changing as well
 ioi_all <<- list(NA)
-results_rerun <<- data.frame()       # <<- global assignment operator, needs to be used when changing as well
+results_rerun <<- data.frame()      
 elements_seq <<- c()
 all_rmsd_data <<- list()
 
 source("R/find_best_phase_shift.R", local = TRUE)
 source("R/compute_integer_ratios.R", local = TRUE)
+
 # 03: define ui --------------------------------------------------------------
 
 #defined in ui.R
