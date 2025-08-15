@@ -1,16 +1,16 @@
 # function for finding best phase shift of ioi beat
 # minimizing deviations
 
-# author: Lara S. Burchardt with help of ChatGPT
+# author: Lara S. Burchardt with help of ChatGPT (GPT-4-turbo), OpenAI, July 2025.
 library(ggplot2)
 
-find_best_phase_shift <- function(data_ugof, beat_period, step_size = 0.01) {
+find_best_phase_shift <- function(data_bp, beat_period, step_size = 0.01) {
   
   # Extend phase shifts to include negative values (e.g., one full beat before zero)
   phase_shifts <- seq(-beat_period, beat_period, by = step_size)
   
-  min_data <- min(data_ugof)
-  max_data <- max(data_ugof)
+  min_data <- min(data_bp)
+  max_data <- max(data_bp)
   
   # Initialize vector to store RMSD per shift
   rmsd_values <- numeric(length(phase_shifts))
@@ -23,7 +23,7 @@ find_best_phase_shift <- function(data_ugof, beat_period, step_size = 0.01) {
     theo_seq <- seq(from = min_data - beat_period, to = max_data + beat_period, by = beat_period) + shift
     
     # For each observation, find the smallest absolute deviation to the theoretical points
-    deviations <- sapply(data_ugof, function(obs) {
+    deviations <- sapply(data_bp, function(obs) {
       min(abs(obs - theo_seq))
     })
     
