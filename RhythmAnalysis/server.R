@@ -170,6 +170,7 @@ server <- function(input, output) {
         delim  = sepa,
         col_names = colnames
       )
+      
       colnames(data) <- c("X1", "X2", "X3")
       data <- data %>% select(X1, X2, X3)
       
@@ -246,6 +247,9 @@ server <- function(input, output) {
         
         # Filter data for selected element types
         data <- data %>% dplyr::filter(X3 %in% elementlist)
+      } else {
+        # if no X3 with element types provided --> NA
+        elements_seq[a] <<- NA_character_
       }
 
       
@@ -542,6 +546,7 @@ server <- function(input, output) {
           ) +
           xlab("IOI [sec]") +
           ylab("Percentage [%]") +
+          ggtitle("Histogram of IOIs")+
           theme_minimal()
         
         #saveRDS(p, file.path(save_path, "plot_hist_ioi.rds"))
@@ -563,7 +568,8 @@ server <- function(input, output) {
           coord_cartesian(xlim = c(0, 1)) +
           theme_minimal() +
           xlab("Integer Ratios") +
-          ylab(" Density")
+          ylab(" Density")+
+          ggtitle("Density Plots of Integer Ratios for All Ratios, Adjacent Pairs and Non-adjacent Pairs")
         
         #saveRDS(p, file.path(save_path, "plot_integer_ratio.rds"))
         

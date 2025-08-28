@@ -41,6 +41,7 @@ ui <- fluidPage(
         .tab-content-wrapper { padding: 20px; }
         .input-section-title { font-weight: bold; margin-bottom: 10px; }
         .go-button-bottom { display: flex; justify-content: center; margin-top: 20px; }
+        hr { border: none; border-top: 4px solid #000; margin: 100px 0; }
         "
       )
     ),
@@ -112,9 +113,11 @@ ui <- fluidPage(
                 choices = c("All pairs" = "all", "Random pairs" = "random"),
                 selected = "all"
               ),
+              conditionalPanel(
+              condition = "input.ratio_method == 'random'",
               numericInput(
                 "n_random_pairs",
-                "Number of random pairs (if applicable)",
+                "Number of random pairs",
                 value = 20,
                 min = 20
               ),
@@ -124,6 +127,7 @@ ui <- fluidPage(
                 value = 123,
                 min = 1
               )
+              ) # end conditional panel
               # numericInput("fs", "Sampling Rate (FS) for Fourier Analysis", min = 10, max = 1000, value = 20)
             )
           ),
@@ -210,12 +214,19 @@ ui <- fluidPage(
     tabPanel(
       "Analysis Results",
       plotlyOutput("plot_ioi_all"),
+      tags$hr(),
       plotlyOutput("plot_ir_all"),
+      tags$hr(),
       tableOutput("table_ioi"),
+      tags$hr(),
       plotlyOutput("rawDeviationHist"),
+      tags$hr(),
       plotlyOutput("plot_beat"),
+      tags$hr(),
       plotlyOutput("plot_ugof"),
+      tags$hr(),
       plotlyOutput("plot_var"),
+      tags$hr(),
       plotlyOutput("phasePlot")
     ),
     

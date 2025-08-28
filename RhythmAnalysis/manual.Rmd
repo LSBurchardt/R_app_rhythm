@@ -35,7 +35,9 @@ This is the manual for the shiny application "RANTO - Rhythm ANalysis TOol for T
 
 The [code](https://github.com/LSBurchardt/R_app_rhythm) for the app lies on my github repository.
 
-Who am I? You can find out more about me [here](https://www.researchgate.net/profile/Lara-Burchardt)
+Who am I? My name is Lara, I am a trained Biologist and did my PhD on rhythm in animals' acoustic signals and how to analyse them at the Museum für Naturkunde Berlin and the Freie Universität Berlin.
+
+I am currently working at the Humboldt-Universität zu Berlin, where I have my own DFG-project to develop rhythm analysis methodology further. Currently I am working on different projects to analyse the temporal structures of communication signals, i.e. during development, across languages or time while further improving rhythm analysis methods and their accessibility. 
 
 ## Why use this app?
 
@@ -43,12 +45,14 @@ Who am I? You can find out more about me [here](https://www.researchgate.net/pro
 
 The temporal structure of animal communication is a potentially crucial parameter, that historically was often overlooked, especially in mammals and birds. With the development of new methods in recent years, research on rhythm analysis in animal communication is an ever-growing field, with yet many knowledge gaps: we want to identify the adaptive function of rhythms and add this piece of the puzzle to ongoing discussions about the evolution of language and music. Apart from that, the temporal structure of vocalizations can inform about species identity, communication context, arousal state, health conditions, and many more, which has wide implications for a lot of research fields ranging from behavioral ecology and cognitive science to conversation biology, and animal welfare.  (Anichini et al., 2020; Honing & Ploeger, 2012; Honing et al., 2015; Manser, 2001; Ravignani et al., 2019).  
 
-Different parameters can be measured in the context of rhythm analysis, many of which I studied and developed during my doctoral thesis (Burchardt, Briefer, et al., 2021; Burchardt & Knörnschild, 2020). For example, we can calculate simple distributional parameters, such as mean and coefficient of variation of Inter-Onset-Intervals (IOI), the duration between the start of a sound element in a sequence and the start of the next element in that sequence (Figure 1). A possible next step is to describe a single sequence with one particular rhythm or beat in hertz (Hz). A sequence with a rhythm of 5 Hz would have 5 equally distributed sound elements per second, so roughly one sound element every 200 ms. If it is a perfect fit, it is exactly every 200 ms, but in biological systems such ‘perfection’ seldom happens. Beat precision can then be used to describe how good the fit of the actual elements to the calculated theoretical beat is. I will analyze exact beat frequencies to describe a sequence with the so-called IOI approach (Burchardt & Knörnschild, 2020) and Fourier analysis (Burchardt & Knörnschild, 2020; Burchardt, Picciulin, et al., 2021; Ravignani & Norton, 2017; Saar & Mitra, 2008) and I will use the universal goodness-of-fit value (ugof), which I developed during my doctoral thesis, to determine the beat precision (Figure 1). The striking advantages of the ugof parameter include that it can be calculated independent of the method used to calculate the exact beats; it is independent of the number of elements, the rhythm it is describing, or any other parameter. Other goodness-of-fit values were correlated to i.e., the number of elements or the rhythm they were describing, making them unfit for comparative work or the general description of beat precision. Another important aspect of the ugof parameter is that it can be calculated per sound element and can therefore be investigated on very different levels ranging from single sound elements to long sound sequences. It can be calculated for a single individual, or several individuals of the same species in comparison with another species, making it potentially useful for very different kinds of questions.  
+Different parameters can be measured in the context of rhythm analysis, many of which I studied and developed during my doctoral thesis (Burchardt, Briefer, et al., 2021; Burchardt & Knörnschild, 2020). For example, we can calculate simple distributional parameters, such as mean and coefficient of variation of Inter-Onset-Intervals (IOI), the duration between the start of a sound element in a sequence and the start of the next element in that sequence (Figure 1). Furthermore, we can look at ratios between pairs of IOIs in a sequence, this approach has gained a lot of attention in the last years and is used extensively (Roeske et al., 2020; de Gregorio et al., 2021; Osiecka et al., 2024; Eleuteri et al. 2024; Van der Vleuten et al. 2024). 
+A possible next step is to describe a single sequence with one particular rhythm or beat in hertz (Hz). A sequence with a rhythm of 5 Hz would have 5 equally distributed sound elements per second, so roughly one sound element every 200 ms. If it is a perfect fit, it is exactly every 200 ms, but in biological systems such ‘perfection’ seldom happens. Beat precision can then be used to describe how good the fit of the actual elements to the calculated theoretical beat is. I will analyze exact beat frequencies to describe a sequence with the so-called IOI approach (Burchardt & Knörnschild, 2020) and I will use the universal goodness-of-fit value , which I developed during my doctoral thesis, to determine the beat precision (Figure 1, called bp throughout). The striking advantages of the bp parameter include that it can be calculated independent of the method used to calculate the exact beats; it is independent of the number of elements, the rhythm it is describing, or any other parameter. Other goodness-of-fit values were correlated to i.e., the number of elements or the rhythm they were describing, making them unfit for comparative work or the general description of beat precision. Another important aspect of the bp parameter is that it can be calculated per sound element and can therefore be investigated on very different levels ranging from single sound elements to long sound sequences. It can be calculated for a single individual, or several individuals of the same species in comparison with another species, making it potentially useful for very different kinds of questions. Individual bp values can range from 0 to 1, with 0 meaning a perfect fit and 1 meaning the element is at the maximum possible deviation it can have from a beat. On a summary scale, a symmetry of values around 0.5 exists, where a summary value of 0.1 means the same as a summary value of 0.9, just in case of a 0.9 bp summary, elements would be phase shifted. Therefore, for the summary per sequence values are transformed accordingly to 0 to 0.5 (Burchardt et al., 2025).
 
-This app calculates the rhythm of a sequence of time points using exactly these methods and parameters. 
+The app calculates all these values and makes them available as results tables to download and plots.  
+
 
 ![Alt text](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/ugof.JPG)    
-Figure 1: Theoretical Explanation of the universal goodness of fit value. If applicable, please cite [Burchardt et al, 2021](https://doi.org/10.1002/ece3.8417)
+Figure 1: Theoretical Explanation of the beat precision value. If applicable, please cite [Burchardt et al, 2021](https://doi.org/10.1002/ece3.8417)
 
 
 ### Literature
@@ -61,13 +65,20 @@ Methods:
 
 [Paper 2:](https://doi.org/10.1002/ece3.8417) "Novel ideas to further expand the applicability of rhythm analysis" by Burchardt, Briefer and Knörnschild, 2021
 
-The code in action: 
+[Paper 3:](https://doi.org/10.1111/2041-210X.14118) "Robust rhythm reporting will advance ecological and evolutionary research" by Hersh, Ravignani and Burchardt, 2024
 
-[Paper 3:](https://doi.org/10.1002/ece3.7713) "Assessing acoustic competition between sibling frog species using rhythm analysis" by Filer, Burchardt, van Rensburg, 2021
+[Paper 4:](https://doi.org/10.31219/osf.io/69v5a_v1) Preprint of upcoming book chapter: "What is rhythm and how can we study it?" by Burchardt, Hoeschele, Honing, Large, Merker and Schneider, 2025
 
-[Paper 4:](https://doi.org/10.1098/rsos.210494) "A primer on rhythm quantification for fish sounds: a Mediterranean case study" by Burchardt, Picciulin, Parmentier and Bolgan, 2021
+Different versions of the app were used in the following papers in action:
+
+[Paper 5:](https://doi.org/10.1371/journal.pone.0295589) "Rhythmic properties of Sciaena umbra calls across space and time in the Mediterranean Sea." by Picciulin, Bolgan and Burchardt, 2024
+
+[Paper 6:](https://doi.org/10.31219/osf.io/wtfpv_v1) Preprint "Shared Duration of Speech Intervals Across 49 Human Languages" by Burchardt, Paschen and Fuchs, 2025
 
 ## Preparations
+
+The app runs independent of platforms on Windows, Linux and Mac. No adjustments are needed for any of these. 
+A sessionInfo file with detailed information about R versioning and package versions can be found in the Git repository as well. 
 
 ### Packages
 
@@ -82,19 +93,19 @@ This is an overview of the needed packages, just for your information.
 `shinyWidgets` \
 `tidyverse` \
 `readxl` \
-`openxlsx` \
-`svDialogs` \
-`pracma` \
-`SynchWave` \
 `vegan` \
 `corrplot` \
 `plotly` \
 `DT` \
 `scales` \
+`strings`\
+`Rcpp`\
 
 ### Necessary Code on your machine
 
-In the RStudio app, set up new project (`file -> New project`). If you have never used R projects before, see [here](https://support.rstudio.com/hc/en-us/articles/200526207-Using-RStudio-Projects) for a short explanation of the use and advantageous of R Projects. 
+To run the app it is easiest to do so in RStudio. 
+
+In the RStudio app, set up new project (`file -> New project`). If you have never used R projects before, see [here](https://support.rstudio.com/hc/en-us/articles/200526207-Using-RStudio-Projects) for a short explanation of the use and advantageous of R Projects. If you are using a different shell just makes sure that all codes are in the same folder and this folder is set as working directory. 
 
 You now need to download the code from [github](https://github.com/LSBurchardt/R_app_rhythm) into this project folder. This will ensure, that RStudio can access all necessary files and data without any further steps. 
 
@@ -102,14 +113,13 @@ You now need to download the code from [github](https://github.com/LSBurchardt/R
 Figure 2: Screenshot of github page to guide code download. 
 
 On the project webpage, you click the green button "Code" and then choose "Download ZIP" (Figure 1) 
-Actually needed are the following items in the folder:
+This will download the main app codes:
 
 `global.R` \
 `ui.R` \
 `server.R` \
-`manual.pdf` \
 
-and the folders `www` and  `images_manual`  with all its content. 
+and the folders `R`, containing helper functions for the app; `www` and  `images_manual` containing necessary files for the app and manual to work. You will also find the folder `test data\csv` with ten test csv files to analyze also showing the necessary structure of input files. More on that later. 
 
 Everything, that you save within the app (i.e., data) will also be saved into the project folder. 
 
@@ -117,17 +127,13 @@ Everything, that you save within the app (i.e., data) will also be saved into th
 
 ## How should the input data look like?
 
-The input data needs to include the relevant event time points you want to calculate rhythms for. This could be starting points of sound elements, end points of sound elements, or timepoint with peak energy of sound elements, depending on your data and approach. These timepoints need to be in the first column of a datatable input, that could be in one of the three formats:
+The input data needs to include the relevant event time points you want to calculate rhythms for. This could be starting points of sound elements, end points of sound elements, or time point with peak energy of sound elements, depending on your data and approach. These time points need to be in the first column of a data table input. The app only takes .csv files.
+ 
+The data table can include respective "endpoints" of sound elements, if applicable or element types in a second and third column, but that is not necessary. If you supply element types, it is possible to filter for element types and calculate rhythms element type wise. Elements need to be labeled with letters for this to work. You can distignuish up to 26 element types (a-z). For most datasets distinguishing between 10 element types is enough (a-j), per default only these elements are shown. If you need more element types, click the corresponding button "Show more elements".
 
- 1. csv
- 2. xls
- 3. xlsx
+A possible example of an input data table is shown below.
  
-You select the input format later in the app through a dropdown menu. 
-The data table can include respective "endpoints" of sound elements, if applicable or element types in a second and third column, but that is not necessary. If you supply element types, it is possible to filter for element types and calculate rhythms element type wise. elements need to be labeled with letters for this to work, up to six element types (a,b,c,d,e,f) can currently be distinguished. <!-- If you supply element types, it is possible to filter for element types and calculate rhythms element type wise. elements need to be labeled with letters for this to work, up to six element types (a,b,c,d,e,f) can currently be distinguished. -->
- A possible example of an input data table is shown below.
- 
- Table 1: Exemplary input data table with timepoints of interest in the first column (here start points), the respective end points and the element type. 
+ Table 1: Exemplary input data table with time points of interest in the first column (here start points), the respective end points and the element type. 
 
 \begin{tabular}{|c|c|c|}
 	\hline

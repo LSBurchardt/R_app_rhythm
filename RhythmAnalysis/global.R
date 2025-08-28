@@ -34,7 +34,6 @@ install_load(
   "shinyWidgets",
   "tidyverse",
   "readxl",
-  "openxlsx",
   "vegan" ,
   "corrplot",
   "plotly",
