@@ -648,15 +648,7 @@ server <- function(input, output) {
         
         ioi_seq <- data.frame(ioi = ioi$ioi)
         colnames(ioi_seq) <- c("ioi")
-        
-        # for (x in  1:nrow(data)) {
-        #   # start of loop through rows of data to calculate iois
-        #   
-        #   z = x + 1
-        #   ioi_seq[x, 1] <- data[z, 1] - data[x, 1]
-        #   
-        # }
-        
+  
         ##  recurrence matrix
         
         # euclidian distance matrix
@@ -667,7 +659,6 @@ server <- function(input, output) {
           eucl_dist[1:(nrow(eucl_dist) - 1), 1:(nrow(eucl_dist) - 1)]
         
         threshold <-
-          #mean(ioi_seq$X1, na.rm = TRUE) * 0.1 # as input?
           mean(ioi_seq$ioi, na.rm = TRUE)* 0.1
         
         eucl_dist[eucl_dist < threshold] <- 0

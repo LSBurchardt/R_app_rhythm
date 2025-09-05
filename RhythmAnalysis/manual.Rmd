@@ -1,10 +1,8 @@
 ---
-title: "Manual Rhythm Analysis App"
+title: "Manual for the RANTO App"
+subtitle: "Rhythm ANalysis TOol for Timeseries"
 author: "Dr. Lara S. Burchardt"
-date: "3/14/2022"
-
-#header-includes: # this should work to include latex packages with \usepackage I get an error though that pdflatex: major issue: Benutzer/Administrator-Updates sind nicht synchron...
-
+date: "01/09/2025"
 output:
   pdf_document:
     highlight: default
@@ -29,7 +27,7 @@ urlcolor: blue
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Introduction
+# 1. Introduction
 
 This is the manual for the shiny application "RANTO - Rhythm ANalysis TOol for Timeseries". The following section will guide you through the first steps and will show you, how to work with the app.
 
@@ -39,9 +37,9 @@ Who am I? My name is Lara, I am a trained Biologist and did my PhD on rhythm in 
 
 I am currently working at the Humboldt-Universität zu Berlin, where I have my own DFG-project to develop rhythm analysis methodology further. Currently I am working on different projects to analyse the temporal structures of communication signals, i.e. during development, across languages or time while further improving rhythm analysis methods and their accessibility. 
 
-## Why use this app?
+## 1.1 Why use this app?
 
-## A little background
+### 1.1.1 A little background
 
 The temporal structure of animal communication is a potentially crucial parameter, that historically was often overlooked, especially in mammals and birds. With the development of new methods in recent years, research on rhythm analysis in animal communication is an ever-growing field, with yet many knowledge gaps: we want to identify the adaptive function of rhythms and add this piece of the puzzle to ongoing discussions about the evolution of language and music. Apart from that, the temporal structure of vocalizations can inform about species identity, communication context, arousal state, health conditions, and many more, which has wide implications for a lot of research fields ranging from behavioral ecology and cognitive science to conversation biology, and animal welfare.  (Anichini et al., 2020; Honing & Ploeger, 2012; Honing et al., 2015; Manser, 2001; Ravignani et al., 2019).  
 
@@ -51,11 +49,10 @@ A possible next step is to describe a single sequence with one particular rhythm
 The app calculates all these values and makes them available as results tables to download and plots.  
 
 
-![Alt text](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/ugof.JPG)    
-Figure 1: Theoretical Explanation of the beat precision value. If applicable, please cite [Burchardt et al, 2021](https://doi.org/10.1002/ece3.8417)
+![An element sequence with the best fitting theoretical beat overlaid and a depcition how the beat precision (ugof) value is calculated. If applicable, please cite [Burchardt et al, 2021](https://doi.org/10.1002/ece3.8417)](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/ugof.JPG)    
 
 
-### Literature
+### 1.1.2 Literature
 
 The methods were described and used by me for example in the following peer-reviewed publications:
 
@@ -75,12 +72,12 @@ Different versions of the app were used in the following papers in action:
 
 [Paper 6:](https://doi.org/10.31219/osf.io/wtfpv_v1) Preprint "Shared Duration of Speech Intervals Across 49 Human Languages" by Burchardt, Paschen and Fuchs, 2025
 
-## Preparations
+## 1.2 Preparations
 
 The app runs independent of platforms on Windows, Linux and Mac. No adjustments are needed for any of these. 
 A sessionInfo file with detailed information about R versioning and package versions can be found in the Git repository as well. 
 
-### Packages
+### 1.2.1 Packages
 
 For the app to work a bunch of packages need to be installed.  The app will automatically check, whether all necessary packages are installed on your local machine, and if not, will install them 
 This is an overview of the needed packages, just for your information.  
@@ -101,7 +98,7 @@ This is an overview of the needed packages, just for your information.
 `strings`\
 `Rcpp`\
 
-### Necessary Code on your machine
+### 1.2.2 Necessary Code on your machine
 
 To run the app it is easiest to do so in RStudio. 
 
@@ -109,8 +106,7 @@ In the RStudio app, set up new project (`file -> New project`). If you have neve
 
 You now need to download the code from [github](https://github.com/LSBurchardt/R_app_rhythm) into this project folder. This will ensure, that RStudio can access all necessary files and data without any further steps. 
 
-![Alt text](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/download_code.JPG)
-Figure 2: Screenshot of github page to guide code download. 
+![Screenshot of github page to guide code download. ](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/download_code.JPG)
 
 On the project webpage, you click the green button "Code" and then choose "Download ZIP" (Figure 1) 
 This will download the main app codes:
@@ -123,13 +119,13 @@ and the folders `R`, containing helper functions for the app; `www` and  `images
 
 Everything, that you save within the app (i.e., data) will also be saved into the project folder. 
 
-# How to use the app?
+# 2. How to use the app?
 
-## How should the input data look like?
+## 2.1 How should the input data look like?
 
 The input data needs to include the relevant event time points you want to calculate rhythms for. This could be starting points of sound elements, end points of sound elements, or time point with peak energy of sound elements, depending on your data and approach. These time points need to be in the first column of a data table input. The app only takes .csv files.
  
-The data table can include respective "endpoints" of sound elements, if applicable or element types in a second and third column, but that is not necessary. If you supply element types, it is possible to filter for element types and calculate rhythms element type wise. Elements need to be labeled with letters for this to work. You can distignuish up to 26 element types (a-z). For most datasets distinguishing between 10 element types is enough (a-j), per default only these elements are shown. If you need more element types, click the corresponding button "Show more elements".
+The data table needs a second column including respective "endpoints" of sound elements, if applicable. If you do not have endpoints, this column still needs to be present, it can contain pseudo numbers or NAs, as it is currently not used specifically. A third column should contain element types. If you supply element types, it is possible to filter for element types and calculate rhythms element type wise. Elements need to be labeled with small letters from a-z for this to work. You can distinguish up to 26 element types (a-z). For most datasets distinguishing between 10 element types is enough (a-j), per default only these elements are shown. If you need more element types, click the corresponding button "Show more elements". If you do not know or do not care about different elements, just declare everything as "a" for example, then you do not have to adjust anything else. 
 
 A possible example of an input data table is shown below.
  
@@ -141,15 +137,15 @@ A possible example of an input data table is shown below.
 	\hline
 	0.1 & 0.12 & a\\
 	\hline
-	0.2 & 0.23 & a\\
+	0.2 & 0.23 & b\\
 	\hline
-	0.3 &  0.31 & a\\
+	0.3 &  0.31 & b\\
 	\hline
 	0.4 &  0.42 & a\\
 	\hline
-	0.5 &  0.51 & a\\
+	0.5 &  0.51 & d\\
 	\hline
-	0.6 &  0.62 & a\\
+	0.6 &  0.62 & c\\
 	\hline
 	0.7 &  0.71 & a\\
 	\hline
@@ -157,137 +153,186 @@ A possible example of an input data table is shown below.
 	\hline
 	0.9 &  0.91 & a\\
 	\hline
-	1 &  1.01 & a\\
+	1 &  1.01 & g\\
 	\hline
 \end{tabular}
 
 <!-- Here you can find further examples of input data. (include link here to github data input example --> 
 
 
-## Starting the app
+## 2.2 Starting the app
 
-Before you start the app, your environment should be empty, no datasets should be loaded or values be stored. To make sure it is, run the following code `rm(list = ls)` in the console. WARNING: Only do this, when the respective project is opened! Otherwise you might loose data from other projects, you do not want to remove.   
 
-Open one of the following scripts: `global.R`, `ui.R` or `server.R`. All three scripts together form the app. You can start the app from any of the three files. 
+Before you start the app, your environment should be empty, no data sets should be loaded or values be stored. To make sure it is, run the following code `rm(list = ls)` in the console. WARNING: Only do this, when the respective project is opened! Otherwise you might loose data from other projects, you do not want to remove.   
+
+If you are using RStudio, now open one of the following scripts: `global.R`, `ui.R` or `server.R`. All three scripts together form the app (together with some helper files as described above). You can start the app from any of the three files. 
 
 To avoid confusion, it might be easiest to open the `global.R` file, as it is the shortest. Once you open it, on the top right corner you will see the option `Run App` with a green triangle in front of it. If you click on that option, the app will start. 
 
-![Alt text](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/run_app.JPG)
-Figure 3: Where to find the "Run App button" when, i.e. the `global.R` script is opened. 
+![Where to find the "Run App button" when, i.e. the `global.R` script is opened.](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/run_app.JPG){width=50%}
 
-## Input parameters, Options
+If that is not working or you are not using RStudio, you can use this code to start the app: `shiny::runApp()`. For this to work, the app directory needs to be the working directory. If you are working with an R project, the project folder automatically is set as working directory. If you are not working with R projects, specify the working directory with `setwd('RhythmAnalysis')`.
+
+## 2.3 Input parameters, Options
 
 When you start the app, a new window will open, that looks like this:
 
-![Alt text](E:\R_App_Rhythm\R projekt\RhythmAnalysis\images_manual\app_empty.JPG)
+![Overview of the app after launch.](E:\R_App_Rhythm\R projekt\RhythmAnalysis\images_manual\app_empty.png)
 
-You can change several inputs.
-1. First of all, you can decide, whether Recurrence Plots should be produced, this is a slightly time consuming task, which is why the option is given not to render them.
-2. The second input is the sampling rate (FS) you want to choose for the Fourier analysis calculations. The default is 200. Note, that frequencies can be decomposed up to half of the sampling rate. So for the default FS of 200 you would analyse the rhythm in a window between 0 and 100 Hz with the Fourier analysis.
-3. As mentioned before, you need to specify the format of your input data. Only one input format can be analysed at a time and you need to specify the correct data type BEFORE choosing the input folder. Changing the format after choosing the input folder will crash the app. 
-4. You can select a savename for your data, that will be included in the filename, when you download the results. A savename is not necessary for the app to work properly, but advised to not confuse or overwrite results by accident. 
+The app is separated in four tabs: "Input and Data" for setting input parameters and choosing the data to analyse; "Analysis Results" which shows the results in tables and plots; "Recurrence Plots" which shows recurrence plots of each individual file that was analysed (more on recurrence plots below.) and last, the "Help" tab, which links to this manual and shows some important remarks. 
+
+You can change several inputs in "Input and Data" tab. 
+
+1. Analysis Settings
+
+1.a: Method for IOI Beat; here you can choose between median (default) and mean. This decides, whether the IOI Beat is calculated. Either, the median of IOIs over a sequence is taken to be transformed into a frequency, or the mean is taken.
+
+1.b: Phase Shift Step Size (s); after an IOI beat has been calculated based on median or mean IOI duration in the sequence, we test which phase shift fits the whole sequence best. We shift more than one beat, the step size of which phase shifts to test is choosen here. It can be set in steps of 0.001 in a range from 0.001 to 10 seconds and depends on the sequence. The smaller the step size, the longer the calculations will run. Phase shift optimaztions are saved and also plotted in "Analysis Results".
+
+1.c: Integer ratio method; Integer Ratios are calculated across the sequence for all pairs, not only adjacent pairs. As this can be very time consuming for longer sequences, you can choose the option "random pairs" instead of "All pairs". If you choose "random pairs" two more options appear. You can then choose the number of random pairs to calculate. This will always calculate adjacent and non adjacent pairs in a ratio to 50% each, so in the default case of 20 pairs, 10 random adjacent pairs will be used and 10 non adjacent pairs. The raw integer ratios as well as which pairs were compared is saved.
+For reproducibility, you can set (and report) the seed used for the random choosing for interval pairs. The default seed is 123.
+
+2. Input Data
+
+2.a: Column names present?; Can be either `TRUE` or `FALSE`. Does your dataset have column headers such as "start", "end", or similar? If so, you have to choose `TRUE`, for the analysis to work correctly. If your first row already contains data, choose `FALSE`. You can check with the check button. 
+
+2.b: Select Folder; click this button to choose any folder on your machine for analysis. The folder you choose should only contain the .csv-files you want to analyse to avoid errors or crashes. In the left field you have to choose the folder as depicted, so that the contained csv files are shown in the right field. If you only see a folder on the right side, this won't work. See the picture for how this should look like:
+
+![Folder selection: This is what the window will look like to choose the data to analyse. Like in the picture, the csv files need to be visible on the right side of the window.](E:\R_App_Rhythm\R projekt\RhythmAnalysis\images_manual\select_folder.JPG){width=50%}
+
+2.c: Separator; depending on the settings on your machine, country and data extraction method, your csv files might be separated by commas or other delimiters. You can choose the separator individually, to accommodate this differences. The delimiters would most commonly be any of  `,` | `;` | `\t`. 
+
+2.d: With the "Check" button you can check, whether the chosen input choices work. This will read the first file in your list and display the first few lines. This should look something like this, if the read in works: 
+
+![Check Button: (A) If the read-in works fine, this is what the output of the check button would look like. (B) If the separator is chosen wrong, this is what the table might look like. ](E:\R_App_Rhythm\R projekt\RhythmAnalysis\images_manual\check_button_both.JPG){width=50%}
+ 
+
+2.e: You can select a savename for your data, that will be included in the filename, when you download the results. A savename is necessary for the app to work properly, so a default savename is present. The savename should not be empty.
+
 
 Potential issues: 
+Column names
+- you need to set the column names argument to `TRUE` or `FALSE`. If you choose `FALSE`, but your data does indeed contain specific column headers, the read in will fail, depending on your machine, the app will either crash or just keep running, without any progress, in both cases this error message is likely to be shown in the console --> "Error in FUN: nicht-numerisches Argument für binären Operator" (German) or "Error in FUN: non-numeric argument for binary operator". The app runs into this error the first time it is trying to calculate values, which it then attempts to do on the column name. 
+
+3. Selected Files and Elements
+
+3.a: Once you chose a folder containing csv files, a list of these files will be shown here with the filename and an index for each file. This is also the order in which the files will be analysed. 
+
+![A list of csv files that were chosen for analysis. Note that how files are ordered. If no csv files exist in the chosen folder, the message "No CSV Files found" will be displayed. ](E:\R_App_Rhythm\R projekt\RhythmAnalysis\images_manual\selected_files.jpg){width=20%}
+
+3.b: Choose elements a-j; You have supplied element types which you can now analyse separatly if you want. For example, you might want to only analyse element types b and c, because they seem to have a different rhythm than the other elements. If you need to differentiate between more than 10 elements, click the button, to be able to decide between elements from a to z (Figure 9). In the results table for the rhythm analysis parameters, the elements you chose will be saved. 
+
+![Per default all element types are selected, so that the full sequence is analysed. Select and de-select as needed.](E:\R_App_Rhythm\R projekt\RhythmAnalysis\images_manual\select_elements.jpg){width=20%}
+
+
 Choosing input elements
 -  if you filter element types in a way, that at least one sequence is of length 0, the app will crash
    corresponding error message --> "Error in :: argument of length 0"
 
-## Choose Data to analyse
 
-After choosing all necessary input arguments, you can click the `Choose folder` button, which will open an explorer window, where you select the folder containing your data in the chosen file format such as `csv`. If there is other files in the same folder, with the same file extension, this will lead to errors, so make sure, to have a designated folder for your data. 
+4. GO Button
 
-After you chose the folder, the data to be analysed will appear in list form in the `Data` Tab (Figure 4).
-
-![Alt text](E:\R_App_Rhythm\R projekt\RhythmAnalysis\images_manual\data_chosen.JPG)
+Once you have selected all input parameters, have chosen a folder to analyse and checked, whether the read in works, have decided on a savename and selected all elements you want to analyse, click the GO button to run the analysis. A spinning circle will appear in the upper right corner, indicating that the app is still calculating. Once it disappears, the calculations are done. You can now move to the "Analysis Results" or "Recurrence Plot" tab and download the results with the download buttons on top.
 
 
-
-click the "GO" Button to run the analyses on the chosen data. If you want to calculate the results with another sampling rate, change the sampling rate and click "Reset FS" to run the calculations again with the new parameter.  
-
-<!--If you want to analyse a different data set with a different file extension, you need to restart the app. The app will crash, when you change the file extension after having run calculations already. -->
+# 3 Analysis and Output
 
 
+## 3.1 Results Table
 
-## Analysis and Output
+The results table contains the following information and parameters (example in Figure 10):
 
+1. Index
 
-All analyses will run automatically and results will appear in the `Results` Tab. Results will be presented in a table. Visualizations will also be generated for the relevant results parameters. 
+2. IOI Beat
 
-It will look something like this: 
+That is the beat frequency in Hertz, that describes the element sequence best, when using the chosen averaging of IOI durations (median or mean) as the basis for the rhythm calculation. An IOI beat of 5 Hz for example means, if indeed our sequence in question can be described by an isochronous beat, we roughly have 5 beats per second. 
 
-![Alt text](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/results_exampletable.jpg)
-### Results and Results Table
+3. Unbiased CV
 
-The following parameters and results are calculated:
+This parameter indicates the variability of IOI durations independent of the sample size and the actual mean it is describing.   The CV sets mean and standard deviation into relation and can be interpreted as a percentage. The higher it is, the higher is the variability. Here an unbiased equation is used, suitable for small sample sizes as well. The exact equations can be found [here in Equation 1 and 2:](https://doi.org/10.1371/journal.pcbi.1007755) 
 
-1. the IOI beat
-  That is the beat frequency in Hertz, that describes the element sequence best, when using the average IOI duration as the       basis for the rhythm calculation. This method is suitable for many datasets. It is suitable for datasets with a low             variability in IOI duration and a general consistency, i.e. because the sequence is not that long, consists of only the same    element type and the temporal structure is very consistent.   
-2. the unbiased Coefficient of Variation
-  This parameter indicates the variability of IOI durations independent of the sample size and the actual mean it is describing.   The CV sets mean and standard deviation into relation and can be interpreted as a percentage. The higher it is, the higher is   the variability. 
-3. the normalized Pairwise Variability Index (nPVI)
-  Another variability parameter, originating in linguistics. It indicates how well you can predict one IOI by the preceding      IOI. A value of 0 would indicate, that every IOI in a sequence is exactly equal.
-4. the Fourier beat
-  That is the beat frequency in Hertz, that describes the element sequence best, when using Fourier analysis to calculate         rhythm. For that, the sequence is first transformed into a binary sequence with th chosen sampling rate. This binary sequence,   where the points of interest (i.e., start point of a sound element) are coded as 1 and everything is 0, is decomposed into its   sinusoidal components with a fast Fourier transformation. Note, that this calculation is strongly influenced by the frequency   resolution of the Fourier analysis. The temporal resolution, i.e., the sampling rate divided by the sample length gives the     frequency resolution. As a rule of thumb: the longer the signal, the smaller is the problem of a coarse frequency resolution.
-  In case the frequency resolution is higher, than the actual frequency window, that can be depicted (i.e., sampling rate of 20   Hz, resulting in a frequency window up to 10 Hz, but a frequency resolution of 11 HZ) this value will be given as NA (Figure 7)
-  
-  ![Alt text](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/results_exampletable_fourierNA.JPG)
-  
-  
-5. the frequency resolution
-  That is the frequency resolution of the Fourier Beat. This is especially important, of you want to interpret the suitability    of the Fourier approach or compare the IOI beat and the Fourier beat. The IOI beat is a continuous value, the Fourier beat      result can only take multiplies of the frequency resolution. Fourier beats of a sequence with a low (i.e. large number)         frequency resolution are to be treated and interpreted carefully. Ideally, the frequency resolution should be <0.5 Hz. 
-6. the number of elements
-  The number of elements in each sequence is also depicted in the results table.
-7. the signal length
-  That is the signal length of the binary sequence necessary to calculate the Fourier analysis. It depends on the sampling rate   and the total signal duration and influences the frequency resolution.
-8. the universal goodness of fit of the IOI beat
-   That is the value, indicating, how well the IOI beat describes the sequence. It can lie between 0 and 1 and can be              interpreted   as a percentage. The lower it is, the better the fit between theoretical beat and actual sound elements. 
-9. the universal goodness of fit of the Fourier beat
-   That is the same parameter, just calculated for the Fourier beat
-   
-   
-For detailed explanations of the parameters and methods please see: 
-1. [Burchardt & Knörnschild, 2020](https://doi.org/10.1371/journal.pcbi.1007755)
-2. [Burchardt et al, 2021](https://doi.org/10.1002/ece3.8417)
+4. npvi
 
-Furthermore shown in the results table are: 
+Another variability parameter, originating in linguistics. It indicates how well you can predict one IOI by the preceding      IOI. A value of 0 would indicate, that every IOI in a sequence is exactly equal.
+The exact equations can be found [here in Equation 3:](https://doi.org/10.1371/journal.pcbi.1007755) 
 
-10. the sampling rate
-  The chosen sampling rate is given in the results table. 
-11. the file name
-  The file name of the analysed sequence
-12. a possible save name   
-  If you chose a "savename" in the interface, that will be depicted here as well, for the easier discrimination in possible subsequent analyses. 
-  
-The very first column of the results table just gives an index number, that can be used for subsequent analyses and can be used in this app, to re-analyze certain parts of a certain sequence. 
+5. Beat Precision (ugof_ioi)
 
+That is the value, indicating, how well the IOI beat describes the sequence. Beat precision is calcualted per element, the raw values can be downloaded as well. Here we report the mean beat precision across a sequence. In contrast to individual values, that can lie between 0 and 1, the summary values can lie between 0 and 0.5, as a symmetry around 0.5 exists. A mean of 0.1 and a mean of 0.9 would technically mean the same thing (just phase shifted), so mean values are transformed according to this symmetry (see [here for a more detailed explanation and equation:](https://doi.org/10.31219/osf.io/69v5a_v1) ). The lower it is, the better the fit between theoretical beat and actual sound elements. 
 
-### Results and Visualizations 
+6. Silent Beats 
 
+Not every theoretical beat must be accompanied by a sound element, this value indicates how potentially "silent beats" we have. It is calculated as the number of theoretical beat - the number of elements. If elements are spaced very unevenly, it can happen that more than one element is "matched" to the same beat, which is not depicted, but needs to be considered and should not happen to often, otherwise IOI Beats are probably not capturing the event sequence well. 
+
+7. npvi beat precision (npvi_ugof_ioi)
+
+We calcualte the npvi across the beat precision values to see the variability in precision. 
+
+8. cv beat precision (cv_ugof_ioi)
+
+We calcualte the coefficient of variation across the beat precision values to see the variability in precision. 
+
+9. averaging method
+
+This just saves the averaging method you chose for calculating the IOI Beat, median or mean. 
+
+10. elements used
+
+This saves the elements that you chose to analyse.
+
+11. element sequence
+
+The exact element sequence of the respective file. 
+
+12. filename
+
+The filename of the input file for reference.
+
+13. savename 
+
+The savename you chose for the analysis run. 
 
 
+![ Example Results Table](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/example_results_table.JPG)
 
-<!-- # The different Tabs in detail
+## 3.2 Visualization of Results 
 
-## Data
+Different rhythm values are plotted for a first overview. In the following order we see:
 
-## Results
-
-- silent beats...
-- element sequence/which elements were analysed
-
-## Recurrence Plots
-
-## Re-run analysis on Section
-
-## Beat precision details
-
-## Help
-
-Possible reasons for the app to crash:
-
-Choosing input elements:
-- problems that can arise: if you filter element types in a way, that at least one sequence is of length 0, the app will crash
+- A histogram of IOIs
+- A density plot of integer ratios, all integer ratios are shown in black, then we separate lines again for only adjacent iois and non-adjacent iois
+- (Results Table)
+- A histogram of the raw deviations in seconds of elements from the closest theoretical beat
+- A Scatter plot of the found IOI Beats
+- A Scatter plot of the Beat Precision Values and Coefficients of variation
+- A Scatter plot of npvi values
+- A line plot showing the phase shift optimization. We search for the phase shift, with the lowest Root-Mean-Square-Deviation between elements and theoretical beats. Raw deviations and beat precision are calculated and saved after phase shift optimization. 
 
 
-Other issues
-- sometimes results table will not show: try clicking the reset results table button, works in most situations -->
+## 3.3 Recurrence Plots
+
+Recurrence Plots are a way of visualizing the temporal structure of sequences, this is especially interesting for longer sequences. The plot is comprised of squares, each square depicts the comparison of one interval in the sequence with another interval in the sequence. The color of the square indicates the difference between the two intervals. The darker a square is, the larger the difference, a white square can be seen as similar intervals (a threshold is applied here, to allow small differences and still plot a white square). To quantify the difference, euclidean distances are calculated between every pair of intervals. 
+
+To calculate euclidean distances, the  `vegist` function from the  `vegan` package is used. If the euclidean distance is below a data driven threshold, the euclidean distance is set to 0. The threshold is calculated as the mean of IOIs * 0.1. This is based on a similar approach in [Ravignani & Norton, 2017]( https://doi.org/10.1093/jole/lzx002).
+
+In case you want to adjust this threshold, it is set in the server.R file in section 5: Recurrence Plots, line 661-664 (code version 05.09.2025). 
+
+
+# 4. Download Buttons 
+
+There are four download buttons available (Figure 10). Once the analysis were run, four different datasets with results can be downloaded as a .csv file.
+
+![Download Buttons](E:/R_App_Rhythm/R projekt/RhythmAnalysis/images_manual/download_button.JPG)
+
+Rhythm Analysis Results: This contains the results table also shown in the app.
+
+Combined IOIs: This gives a table of all IOIs that were analysed, with file information and the respective IOI beat. 
+
+Integer Ratios: This gives a table of all calculated integer ratios. The index of the intervals compaired (i,j) are given, as well as a boolean column stating, whether these intervals are adjacent (TRUE) or not (FALSE) and the filename. 
+
+Raw deviations: This table shows a bunch of parameters connected to how well the element sequence fits the theoretical sequence. We have the filename and the index of the element per sequence. Then we have the time point of the element (obs_value) and the timepoint of the matched theoretical beat (matched_theo), then we have the raw deviation in seconds between these two points (raw_deviation) as well as the absolute deviation (abs_deviation). Given in this table is also the best phase shift, that was applied to the sequence before calculating these parameters (best_shift) and the beat precision value of the element (ugof_value_beat) which is summarized per sequence to form the "ugof_ioi" value in the Analysis Results table. 
+
+
+
+

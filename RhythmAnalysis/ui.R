@@ -76,9 +76,9 @@ ui <- fluidPage(
   # Centered Top Action Buttons
   div(
     class = "center-buttons",
-    downloadButton("downloadData", "Download Results"),
-    downloadButton("downloadData_ioi", "Download combined raw IOIs"),
-    downloadButton("downloadData_ir", "Download raw integer ratios"),
+    downloadButton("downloadData", "Download Rhythm Analysis Results"),
+    downloadButton("downloadData_ioi", "Download Combined IOIs"),
+    downloadButton("downloadData_ir", "Download Integer Ratios"),
     downloadButton("downloadData_rawdev", "Download Raw Deviations")
   ),
   
