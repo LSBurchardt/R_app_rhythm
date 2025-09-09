@@ -1,12 +1,14 @@
 ---
-title: 'RAnTo: A Shiny App to analyse the rhythm of time series like animal communication'
+title: 'RANTO: A Shiny App to Analyse the Rhythm of Animal Communication and other Behaviours'
 tags:
   - Shiny
   - Behavioral Biology
-  - timeseries
-  - rhythm
-  - isochrony
-  - integer ratio
+  - Timeseries
+  - Rhythm
+  - Isochrony
+  - Integer Ratio
+  - Bioacoustics
+  - Behavioural Biology
 authors:
   - name: Lara S. Burchardt
     orcid: 0000-0002-9210-7934
