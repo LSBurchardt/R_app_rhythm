@@ -20,7 +20,7 @@ affiliations:
    index: 2
 
 date: 05 September 2025
-#bibliography: paper.bib
+bibliography: paper.bib
 
 # Optional fields if submitting to a AAS journal too, see this blog post:
 # https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing
@@ -30,19 +30,19 @@ date: 05 September 2025
 
 # Summary
 
-Rhythmic organization is a fundamental property of behavior in many species, ranging from acoustic communication to motor patterns (citations). However, quantifying such rhythmic structure often requires specialized analyses, and existing tools are either scattered across different packages or require substantial programming expertise.
+Rhythmic organization is a fundamental property of behavior in many species, ranging from acoustic communication to motor patterns (@greenfield2023rhythms, @sauciuc_etal_2025,@Van_der_Vleuten2024-lz,@heinsohn2017tool, @buck_buck_firefly, @mathevon2017northern, @de2023isochronous, @burchardt2019general). However, quantifying such rhythmic structure often requires specialized analyses, and existing tools are either scattered across different packages or require substantial programming expertise (@burchardt_skylark_2021, @hersh2023robust, @Ravignani2017-zv, @Roeske2020-rj, @norton2016bird, @burchardt2020comparison).
 
-I present RANTO (Rhythm Analysis Tool for Timeseries), an interactive Shiny application that facilitates the analysis and visualization of rhythmic behaviors and element sequences. RANTO integrates multiple established rhythm analysis approaches, such as inter-onset interval (IOI) distributions, integer ratio computation, and phase-shift optimization to align observed events with underlying beat structures (citations). RANTO also provides recurrence plots and measures of variability, making it suitable for exploratory and hypothesis-driven work (citations).
+I present RANTO (Rhythm Analysis Tool for Timeseries), an interactive Shiny application that facilitates the analysis and visualization of rhythmic behaviors and element sequences. RANTO integrates multiple established rhythm analysis approaches, such as inter-onset interval (IOI) distributions, integer ratio computation, and phase-shift optimization to align observed events with underlying beat structures (@Roeske2020-rj, @burchardt_2025, @norton2016bird). RANTO also provides recurrence plots and measures of variability, making it suitable for exploratory and hypothesis-driven work (@burchardt_skylark_2021,@Ravignani2017-zv).
 
 RANTO is designed for accessibility and reproducibility. Users can upload time-series data in CSV format, configure analysis settings through an intuitive graphical interface, and export plots and results tables, without having to interact with the code at all. The app is written entirely in R and depends on well-supported open-source libraries, making it platform-independent and extensible. 
 
 # Statement of need
 
-Researchers in bioacoustics and behavioral biology frequently study temporal patterning of signals — for example, the rhythm of bird song, whale song, primate or bat vocalizations and repetitive motor acts (citations). While rhythm is a key component of communication and behavior, tools for its analysis are often scattered, require substantial expertise and coding, or are tailored to specific data sets.
+Researchers in bio acoustics and behavioral biology frequently study temporal patterning of signals — for example, the rhythm of insects shirping or flashing displays, bird song, whale song, primate or bat vocalizations, fish sounds and repetitive motor acts (@greenfield2023rhythms, @hersh2024cetaceans, @@Van_der_Vleuten2024-lz, @norton2016bird, @burchardt2019general, @fernandez2021babbling, @demartsev2023male, @picciulin2024rhythmic). While rhythm is a key component of communication and behavior, tools for its analysis are often scattered, require substantial expertise and coding, or are tailored to specific data sets.
 
 RANTO addresses this gap by providing a standalone, open-source, GUI-based application for rhythm analysis. It allows researchers without advanced programming experience to analyze temporal sequences of behavioral elements and to compare rhythmic organization across data sets. Importantly, it integrates multiple methods — from basic IOI statistics to phase-shift beat alignment and recurrence plots — into a single workflow.
 
-By making rhythm analysis accessible and reproducible, RANTO lowers the barrier for behavioral scientists to incorporate temporal structure into their research. This is particularly relevant for the bioacoustics community, but also applies broadly to ethology, neuroscience, and other fields where temporal organization of behavior is of interest.
+By making rhythm analysis accessible and reproducible, RANTO lowers the barrier for behavioral scientists to incorporate temporal structure into their research. This is particularly relevant for the bio acoustics community, but also applies broadly to ethology, neuroscience, and other fields where temporal organization of behavior is of interest.
 
 # Acknowledgements
 
