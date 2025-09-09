@@ -46,6 +46,6 @@ By making rhythm analysis accessible and reproducible, RANTO lowers the barrier 
 
 # Acknowledgements
 
-I want to acknowledge funding for this project from "Innovation Fund" of the Museum für Naturkunde – Leibniz-Institut für Evolutions- und Biodiversitätsforschung and the DFG (BU 4375/1-1, project number: 528064681). 
+I want to acknowledge funding for this project from "Innovation Fund" of the Museum für Naturkunde – Leibniz-Institut für Evolutions- und Biodiversitätsforschung and the DFG (BU 4375/1-1, project number: 528064681).
 
 # References

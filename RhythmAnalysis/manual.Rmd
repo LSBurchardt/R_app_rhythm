@@ -210,9 +210,7 @@ For reproducibility, you can set (and report) the seed used for the random choos
 2.e: You can select a savename for your data, that will be included in the filename, when you download the results. A savename is necessary for the app to work properly, so a default savename is present. The savename should not be empty.
 
 
-Potential issues: 
-Column names
-- you need to set the column names argument to `TRUE` or `FALSE`. If you choose `FALSE`, but your data does indeed contain specific column headers, the read in will fail, depending on your machine, the app will either crash or just keep running, without any progress, in both cases this error message is likely to be shown in the console --> "Error in FUN: nicht-numerisches Argument für binären Operator" (German) or "Error in FUN: non-numeric argument for binary operator". The app runs into this error the first time it is trying to calculate values, which it then attempts to do on the column name. 
+
 
 3. Selected Files and Elements
 
@@ -225,9 +223,7 @@ Column names
 ![Per default all element types are selected, so that the full sequence is analysed. Select and de-select as needed.](E:\R_App_Rhythm\R projekt\RhythmAnalysis\images_manual\select_elements.jpg){width=20%}
 
 
-Choosing input elements
--  if you filter element types in a way, that at least one sequence is of length 0, the app will crash
-   corresponding error message --> "Error in :: argument of length 0"
+
 
 
 4. GO Button
@@ -333,6 +329,23 @@ Integer Ratios: This gives a table of all calculated integer ratios. The index o
 
 Raw deviations: This table shows a bunch of parameters connected to how well the element sequence fits the theoretical sequence. We have the filename and the index of the element per sequence. Then we have the time point of the element (obs_value) and the timepoint of the matched theoretical beat (matched_theo), then we have the raw deviation in seconds between these two points (raw_deviation) as well as the absolute deviation (abs_deviation). Given in this table is also the best phase shift, that was applied to the sequence before calculating these parameters (best_shift) and the beat precision value of the element (ugof_value_beat) which is summarized per sequence to form the "ugof_ioi" value in the Analysis Results table. 
 
+# 5. Potential Issues
 
 
+## 5.1 Spam Package on Mac OS and Linux
+
+On a MAc OS or Linux machine, you might get an error because the `spam` package could not be installed. 
+The easiest solution on a Mac is to do `brew install gcc` in a terminal if you have [Homebrew](https://brew.sh/) installed, and then manually install the spam package. On Linux `gcc` is installed by default in most distributions, otherwise do `sudo apt install gcc`.
+
+
+
+## 5.2 Column names
+
+You need to set the column names argument to `TRUE` or `FALSE`. If you choose `FALSE`, but your data does indeed contain specific column headers, the read in will fail, depending on your machine, the app will either crash or just keep running, without any progress. In both cases this error message is likely to be shown in the console --> "Error in FUN: nicht-numerisches Argument für binären Operator" (German) or "Error in FUN: non-numeric argument for binary operator". The app runs into this error the first time it is trying to calculate values, which it then attempts to do on the column name. Restart the app and choose the right argument for column names to fix the problem.
+
+## 5.3 Choosing input elements
+
+If you filter element types in a way, that at least one sequence is of length 0, the app will crash. The corresponding error message is --> "Error in :: argument of length 0".
+
+Choose more element types or make sure only files remain in the anaylysis folder, that contain enough elements even when filtered for the desired element type. 
 
