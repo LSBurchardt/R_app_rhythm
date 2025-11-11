@@ -146,6 +146,7 @@ server <- function(input, output) {
       matched_theo = numeric(),
       raw_deviation = numeric(),
       abs_deviation = numeric(),
+      element = character(),
       best_shift = numeric(),
       ugof_value_beat = numeric(),
       stringsAsFactors = FALSE
@@ -263,26 +264,31 @@ server <- function(input, output) {
         
         z = x + 1
         ioi[x, 1] <- data[z, 1] - data[x, 1]
+        ioi[x, 2] <- paste0(data$X3[x:z], collapse = "") #save element pair 
         
       }                                   #end of loop through rows of data to calculate iois
       
-      colnames(ioi) <- c("X1")
+      colnames(ioi) <- c("X1", "X2")
       
       ioi_beat <-
-        1 / get(input$method)(ioi$X1, na.rm = TRUE) #the user chooses whether to calculate ioi beat based on median or mean
+        #1 / get(input$method)(ioi$X1, na.rm = TRUE) #the user chooses whether to calculate ioi beat based on median or mean
+        1 / median(ioi$X1, na.rm = TRUE)
       ioi_cv <-
         sd(ioi$X1, na.rm = TRUE) / mean(ioi$X1, na.rm = TRUE)
       ioi_cv_unbiased <-  (1 + 1 / (4 * (nrow(ioi) - 1))) * ioi_cv
       
       for (x in 1:nrow(ioi)) {
-        ioi[x, 2] <- list_of_files()[a]  # filename
-        ioi[x, 3] <- ioi_beat    # frequency in Hz
+        ioi[x, 3] <- list_of_files()[a]  # filename
+        ioi[x, 4] <- ioi_beat    # frequency in Hz
+        
       }
       
       colnames(ioi) <-
         c("ioi",
+          "element_pair",
           "filename",
-          "reference_beat")
+          "reference_beat"
+          )
       
       ioi_all[[a]] <<- ioi
       
@@ -377,6 +383,7 @@ server <- function(input, output) {
             matched_theo = matched_theo,
             raw_deviation = raw_dev,
             abs_deviation = abs_dev,
+            element = data$X3[n],
             best_shift = as.numeric(best_phase_shift$best_shift),
             ugof_value_beat = ugof,
             stringsAsFactors = FALSE
